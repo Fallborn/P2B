@@ -79,7 +79,7 @@ def eval_recalls(gts,
     Returns:
         ndarray: recalls of different ious and proposal nums
     """
-
+    iou_thrs = 0.5
     img_num = len(gts)
     assert img_num == len(proposals)
 

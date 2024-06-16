@@ -52,7 +52,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=80,
+            num_classes=6,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -145,22 +145,22 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file='../TOV_mmdetection_cache/coco_1200_latest_pseudo_ann_1_pbr.json',
-        img_prefix=data_root + 'images',
+        ann_file='/home/lxz/P2BNet/TOV_mmdetection_cache/work_dir/coco/coco_1200_latest_pseudo_ann_1.json',
+        img_prefix=data_root + 'images' + '/train',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        img_prefix=data_root + 'images',
+        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_test.json',
+        img_prefix=data_root + 'images' + '/test',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        img_prefix=data_root + 'images',
+        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_test.json',
+        img_prefix=data_root + 'images' + '/test',
         pipeline=test_pipeline))
 
 evaluation = dict(interval=1, metric='bbox',do_final_eval=True)

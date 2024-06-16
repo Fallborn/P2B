@@ -71,6 +71,10 @@ def get_coco_style_results(filename,
         for severity in eval_output[distortion]:
             for metric_j, metric_name in enumerate(metrics):
                 mAP = eval_output[distortion][severity][task][metric_name]
+                print("*********")
+                print(eval_output[distortion][severity][task].keys())
+                print("*********")
+
                 results[corr_i, severity, metric_j] = mAP
 
     P = results[0, 0, :]
