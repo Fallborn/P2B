@@ -17,6 +17,7 @@ from mmdet.datasets import build_dataset
 from mmdet.models import build_detector
 from mmdet.utils import collect_env, get_root_logger
 
+torch.autograd.set_detect_anomaly(True)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
@@ -185,4 +186,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    for i in range(1000):
+        main()

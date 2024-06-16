@@ -1,0 +1,359 @@
+2024-03-22 00:47:39,106 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.7.16 (default, Jan 17 2023, 22:20:44) [GCC 11.2.0]
+CUDA available: True
+GPU 0,1,2,3,4,5,6,7: NVIDIA GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda-12.0
+NVCC: Build cuda_12.0.r12.0/compiler.31968024_0
+GCC: gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0
+PyTorch: 1.7.0
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.4-Product Build 20210904 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.6.0 (Git Hash 5ef631a030a6f73131c77892041042805a06064f)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.0
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.0.3
+  - Magma 2.5.2
+  - Build settings: BLAS=MKL, BUILD_TYPE=Release, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DUSE_VULKAN_WRAPPER -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, USE_CUDA=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.8.0
+OpenCV: 4.8.1
+MMCV: 1.3.3
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.0
+MMDetection: 2.13.0+c820f32
+------------------------------------------------------------
+
+2024-03-22 00:47:40,970 - mmdet - INFO - Distributed training: False
+2024-03-22 00:47:42,827 - mmdet - INFO - Config:
+checkpoint_config = dict(interval=1)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '../TOV_mmdetection_cache/work_dir/coco/pre_trained/P2B.pth'
+resume_from = None
+workflow = [('train', 1)]
+norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
+debug = False
+num_stages = 2
+model = dict(
+    type='P2BNet',
+    pretrained='torchvision://resnet50',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch'),
+    neck=dict(
+        type='FPNPADNN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=0,
+        add_extra_convs='on_input',
+        num_outs=4,
+        norm_cfg=dict(type='GN', num_groups=32, requires_grad=True)),
+    roi_head=dict(
+        type='P2BHead',
+        num_stages=2,
+        top_k=7,
+        with_atten=False,
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=dict(
+            type='Shared2FCInstanceMILHead',
+            num_stages=2,
+            with_loss_pseudo=False,
+            in_channels=256,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=6,
+            num_ref_fcs=0,
+            bbox_coder=dict(
+                type='DeltaXYWHBBoxCoder',
+                target_means=[0.0, 0.0, 0.0, 0.0],
+                target_stds=[0.1, 0.1, 0.2, 0.2]),
+            reg_class_agnostic=True,
+            loss_type='MIL',
+            loss_mil1=dict(
+                type='MILLoss',
+                binary_ins=False,
+                loss_weight=0.25,
+                loss_type='binary_cross_entropy'),
+            loss_mil2=dict(
+                type='MILLoss',
+                binary_ins=False,
+                loss_weight=0.25,
+                loss_type='gfocal_loss'))),
+    train_cfg=dict(
+        base_proposal=dict(
+            base_scales=[4, 8, 16, 32, 64, 128],
+            base_ratios=[
+                0.3333333333333333, 0.5, 0.6666666666666666, 1.0, 1.5, 2.0, 3.0
+            ],
+            shake_ratio=None,
+            cut_mode='symmetry',
+            gen_num_neg=0),
+        fine_proposal=dict(
+            gen_proposal_mode='fix_gen',
+            cut_mode=None,
+            shake_ratio=[0.1],
+            base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
+            iou_thr=0.3,
+            gen_num_neg=500),
+        rcnn=None),
+    test_cfg=dict(rpn=None, rcnn=None))
+dataset_type = 'CocoFmtDataset'
+data_root = 'data/coco/'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='Resize',
+        img_scale=[(2000, 480), (2000, 576), (2000, 688), (2000, 864),
+                   (2000, 1000), (2000, 1200)],
+        multiscale_mode='value',
+        keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(
+        type='Collect',
+        keys=[
+            'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+            'gt_true_bboxes'
+        ])
+]
+test_scale = 1200
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(2000, 1200),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=[
+                    'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+                    'gt_anns_id', 'gt_true_bboxes'
+                ])
+        ])
+]
+data = dict(
+    samples_per_gpu=4,
+    workers_per_gpu=1,
+    shuffle=None,
+    train=dict(
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations_qc_pt/instances_train2017_coarse.json',
+        img_prefix='data/coco/images/train/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='Resize',
+                img_scale=[(2000, 480), (2000, 576), (2000, 688), (2000, 864),
+                           (2000, 1000), (2000, 1200)],
+                multiscale_mode='value',
+                keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=[
+                    'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+                    'gt_true_bboxes'
+                ])
+        ]),
+    val=dict(
+        samples_per_gpu=4,
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations_qc_pt/instances_train2017_coarse.json',
+        img_prefix='data/coco/images/train/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(2000, 1200),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(
+                        type='Collect',
+                        keys=[
+                            'img', 'gt_bboxes', 'gt_labels',
+                            'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes'
+                        ])
+                ])
+        ],
+        test_mode=False),
+    test=dict(
+        samples_per_gpu=4,
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations_qc_pt/instances_test2017_coarse.json',
+        img_prefix='data/coco/images/test/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(2000, 1200),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(
+                        type='Collect',
+                        keys=[
+                            'img', 'gt_bboxes', 'gt_labels',
+                            'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes'
+                        ])
+                ])
+        ],
+        test_mode=False))
+check = dict(stop_while_nan=False)
+optimizer = dict(type='SGD', lr=0.04, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=12)
+work_dir = '../TOV_mmdetection_cache/work_dir/coco/'
+evaluation = dict(
+    interval=1,
+    metric='bbox',
+    save_result_file=
+    '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result.json',
+    do_first_eval=False,
+    do_final_eval=True)
+gpu_ids = [3]
+
+2024-03-22 00:47:53,422 - mmdet - INFO - load checkpoint from ../TOV_mmdetection_cache/work_dir/coco/pre_trained/P2B.pth
+2024-03-22 00:47:53,423 - mmdet - INFO - Use load_from_local loader
+2024-03-22 00:47:54,412 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for roi_head.bbox_head.fc_cls.0.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([7, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.0.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([7]).
+size mismatch for roi_head.bbox_head.fc_cls.1.weight: copying a param with shape torch.Size([80, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.1.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([6]).
+size mismatch for roi_head.bbox_head.fc_ins.0.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([7, 1024]).
+size mismatch for roi_head.bbox_head.fc_ins.0.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([7]).
+size mismatch for roi_head.bbox_head.fc_ins.1.weight: copying a param with shape torch.Size([80, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_ins.1.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([6]).
+missing keys in source state_dict: neck.cbam.ca.fc1.weight, neck.cbam.ca.fc2.weight, neck.cbam.sa.conv1.weight, neck.offsets.weight, neck.offsets.bias, neck.dcn.weight
+
+2024-03-22 00:47:54,424 - mmdet - INFO - Start running, host: lxz@user-SYS-4029GP-TRT2, work_dir: /home/lxz/P2BNet/TOV_mmdetection_cache/work_dir/coco
+2024-03-22 00:47:54,424 - mmdet - INFO - workflow: [('train', 1)], max: 12 epochs
+2024-03-22 00:49:20,157 - mmdet - INFO - Epoch [1][50/360]	lr: 3.956e-03, eta: 2:02:00, time: 1.714, data_time: 0.074, memory: 9533, stage0_loss_instance_mil: 0.6991, stage0_bag_acc: 14.2463, stage0_mean_ious: 0.3565, stage0_s: 0.0000, stage0_m: 0.0093, stage0_l: 0.1449, stage0_h: 0.3678, stage1_loss_instance_mil: 0.1657, stage1_bag_acc: 16.3582, stage1_neg_loss: 0.0013, stage1_mean_ious: 0.3270, stage1_s: 0.0000, stage1_m: 0.0088, stage1_l: 0.1324, stage1_h: 0.3382, loss: 0.8661, grad_norm: 2.0500
+2024-03-22 00:50:42,283 - mmdet - INFO - Epoch [1][100/360]	lr: 7.952e-03, eta: 1:58:03, time: 1.643, data_time: 0.026, memory: 9533, stage0_loss_instance_mil: 0.5567, stage0_bag_acc: 48.0549, stage0_mean_ious: 0.4187, stage0_s: 0.0000, stage0_m: 0.0116, stage0_l: 0.1991, stage0_h: 0.4306, stage1_loss_instance_mil: 0.2058, stage1_bag_acc: 36.7085, stage1_neg_loss: 0.0358, stage1_mean_ious: 0.3896, stage1_s: 0.0000, stage1_m: 0.0111, stage1_l: 0.1925, stage1_h: 0.3981, loss: 0.7983, grad_norm: 3.5951
+2024-03-22 00:52:01,825 - mmdet - INFO - Epoch [1][150/360]	lr: 1.195e-02, eta: 1:54:37, time: 1.591, data_time: 0.026, memory: 9538, stage0_loss_instance_mil: 0.5073, stage0_bag_acc: 50.8872, stage0_mean_ious: 0.2997, stage0_s: 0.0000, stage0_m: 0.0301, stage0_l: 0.1728, stage0_h: 0.3034, stage1_loss_instance_mil: 0.3312, stage1_bag_acc: 34.0774, stage1_neg_loss: 0.0297, stage1_mean_ious: 0.2964, stage1_s: 0.0000, stage1_m: 0.0328, stage1_l: 0.1805, stage1_h: 0.2974, loss: 0.8682, grad_norm: 4.1536
+2024-03-22 00:53:20,788 - mmdet - INFO - Epoch [1][200/360]	lr: 1.594e-02, eta: 1:52:02, time: 1.579, data_time: 0.026, memory: 9538, stage0_loss_instance_mil: 0.6259, stage0_bag_acc: 32.9864, stage0_mean_ious: 0.1604, stage0_s: 0.0000, stage0_m: 0.0150, stage0_l: 0.1340, stage0_h: 0.1529, stage1_loss_instance_mil: 0.2185, stage1_bag_acc: 24.6418, stage1_neg_loss: 0.0056, stage1_mean_ious: 0.1596, stage1_s: 0.0000, stage1_m: 0.0169, stage1_l: 0.1372, stage1_h: 0.1521, loss: 0.8500, grad_norm: 1.4358
+2024-03-22 00:54:44,739 - mmdet - INFO - Epoch [1][250/360]	lr: 1.994e-02, eta: 1:51:19, time: 1.679, data_time: 0.027, memory: 9540, stage0_loss_instance_mil: 0.5525, stage0_bag_acc: 46.6076, stage0_mean_ious: 0.2715, stage0_s: 0.0000, stage0_m: 0.0156, stage0_l: 0.1471, stage0_h: 0.2787, stage1_loss_instance_mil: 0.1940, stage1_bag_acc: 45.8684, stage1_neg_loss: 0.0239, stage1_mean_ious: 0.2534, stage1_s: 0.0000, stage1_m: 0.0130, stage1_l: 0.1339, stage1_h: 0.2591, loss: 0.7704, grad_norm: 1.9648
+2024-03-22 00:56:02,726 - mmdet - INFO - Epoch [1][300/360]	lr: 2.394e-02, eta: 1:49:03, time: 1.560, data_time: 0.025, memory: 9540, stage0_loss_instance_mil: 0.5177, stage0_bag_acc: 51.7510, stage0_mean_ious: 0.3103, stage0_s: 0.0000, stage0_m: 0.0309, stage0_l: 0.1106, stage0_h: 0.3201, stage1_loss_instance_mil: 0.2192, stage1_bag_acc: 51.5419, stage1_neg_loss: 0.0322, stage1_mean_ious: 0.2896, stage1_s: 0.0000, stage1_m: 0.0262, stage1_l: 0.1004, stage1_h: 0.3008, loss: 0.7692, grad_norm: 2.0546
+2024-03-22 00:57:21,882 - mmdet - INFO - Epoch [1][350/360]	lr: 2.793e-02, eta: 1:47:16, time: 1.583, data_time: 0.025, memory: 9540, stage0_loss_instance_mil: 0.5593, stage0_bag_acc: 41.6130, stage0_mean_ious: 0.2562, stage0_s: 0.0015, stage0_m: 0.0171, stage0_l: 0.1230, stage0_h: 0.2637, stage1_loss_instance_mil: 0.2229, stage1_bag_acc: 51.1577, stage1_neg_loss: 0.0372, stage1_mean_ious: 0.2422, stage1_s: 0.0016, stage1_m: 0.0141, stage1_l: 0.1259, stage1_h: 0.2476, loss: 0.8194, grad_norm: 2.1190
+2024-03-22 00:57:38,338 - mmdet - INFO - Saving checkpoint at 1 epochs
+2024-03-22 01:04:08,716 - mmdet - INFO - Evaluating bbox...
+2024-03-22 01:04:10,585 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1119
+2024-03-22 01:04:10,585 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.3645
+2024-03-22 01:04:10,585 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.2015
+2024-03-22 01:04:10,586 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0851
+2024-03-22 01:04:10,586 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0367
+2024-03-22 01:04:10,586 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0126
+2024-03-22 01:04:10,586 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0006
+2024-03-22 01:04:10,586 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0804
+2024-03-22 01:04:10,587 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1135
+2024-03-22 01:04:10,587 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1901
+2024-03-22 01:04:10,587 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1787
+2024-03-22 01:04:10,587 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1787
+2024-03-22 01:04:10,587 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1787
+2024-03-22 01:04:10,587 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1204
+2024-03-22 01:04:10,588 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1808
+2024-03-22 01:04:10,588 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.2057
+2024-03-22 01:04:10,624 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-03-22 01:04:10,625 - mmdet - INFO - Epoch(val) [1][360]	eval_iter_num: 360, bbox_mAP: 0.1120, bbox_mAP_50: 0.3640, bbox_mAP_75: 0.2010, bbox_mAP_s: 0.0850, bbox_mAP_m: 0.0370, bbox_mAP_l: 0.0130, bbox_mAP_copypaste: 0.112 0.364 0.201 0.085 0.037 0.013
+2024-03-22 01:05:36,789 - mmdet - INFO - Epoch [2][50/360]	lr: 3.273e-02, eta: 1:43:52, time: 1.723, data_time: 0.078, memory: 9540, stage0_loss_instance_mil: 0.6597, stage0_bag_acc: 25.5396, stage0_mean_ious: 0.3642, stage0_s: 0.0004, stage0_m: 0.0141, stage0_l: 0.1138, stage0_h: 0.3868, stage1_loss_instance_mil: 0.1333, stage1_bag_acc: 37.6430, stage1_neg_loss: 0.0162, stage1_mean_ious: 0.3492, stage1_s: 0.0001, stage1_m: 0.0164, stage1_l: 0.1140, stage1_h: 0.3681, loss: 0.8093, grad_norm: 0.9146
+2024-03-22 01:06:55,684 - mmdet - INFO - Epoch [2][100/360]	lr: 3.672e-02, eta: 1:42:26, time: 1.578, data_time: 0.026, memory: 9540, stage0_loss_instance_mil: 0.6276, stage0_bag_acc: 33.9318, stage0_mean_ious: 0.3212, stage0_s: 0.0000, stage0_m: 0.0080, stage0_l: 0.1092, stage0_h: 0.3324, stage1_loss_instance_mil: 0.1447, stage1_bag_acc: 39.7802, stage1_neg_loss: 0.0216, stage1_mean_ious: 0.3064, stage1_s: 0.0000, stage1_m: 0.0077, stage1_l: 0.1060, stage1_h: 0.3155, loss: 0.7939, grad_norm: 1.1289
+2024-03-22 01:08:15,200 - mmdet - INFO - Epoch [2][150/360]	lr: 4.000e-02, eta: 1:41:05, time: 1.590, data_time: 0.025, memory: 9540, stage0_loss_instance_mil: 0.5770, stage0_bag_acc: 47.1977, stage0_mean_ious: 0.3128, stage0_s: 0.0000, stage0_m: 0.0127, stage0_l: 0.1223, stage0_h: 0.3253, stage1_loss_instance_mil: 0.1588, stage1_bag_acc: 51.7903, stage1_neg_loss: 0.0273, stage1_mean_ious: 0.2874, stage1_s: 0.0000, stage1_m: 0.0158, stage1_l: 0.1256, stage1_h: 0.2958, loss: 0.7630, grad_norm: 1.4690
+2024-03-22 01:09:34,575 - mmdet - INFO - Epoch [2][200/360]	lr: 4.000e-02, eta: 1:39:44, time: 1.588, data_time: 0.025, memory: 9540, stage0_loss_instance_mil: 0.7074, stage0_bag_acc: 22.8136, stage0_mean_ious: 0.2367, stage0_s: 0.0000, stage0_m: 0.0213, stage0_l: 0.1105, stage0_h: 0.2374, stage1_loss_instance_mil: 0.1462, stage1_bag_acc: 30.3234, stage1_neg_loss: 0.0060, stage1_mean_ious: 0.2261, stage1_s: 0.0000, stage1_m: 0.0212, stage1_l: 0.1185, stage1_h: 0.2240, loss: 0.8596, grad_norm: 1.0012
+2024-03-22 01:10:54,459 - mmdet - INFO - Epoch [2][250/360]	lr: 4.000e-02, eta: 1:38:27, time: 1.598, data_time: 0.025, memory: 9540, stage0_loss_instance_mil: 0.6375, stage0_bag_acc: 32.9305, stage0_mean_ious: 0.2506, stage0_s: 0.0000, stage0_m: 0.0276, stage0_l: 0.1334, stage0_h: 0.2585, stage1_loss_instance_mil: 0.1338, stage1_bag_acc: 47.0960, stage1_neg_loss: 0.0196, stage1_mean_ious: 0.2311, stage1_s: 0.0000, stage1_m: 0.0233, stage1_l: 0.1246, stage1_h: 0.2407, loss: 0.7909, grad_norm: 0.9172
+2024-03-22 01:12:15,138 - mmdet - INFO - Epoch [2][300/360]	lr: 4.000e-02, eta: 1:37:13, time: 1.614, data_time: 0.026, memory: 9540, stage0_loss_instance_mil: 0.6792, stage0_bag_acc: 22.5947, stage0_mean_ious: 0.2093, stage0_s: 0.0000, stage0_m: 0.0117, stage0_l: 0.1404, stage0_h: 0.2096, stage1_loss_instance_mil: 0.1224, stage1_bag_acc: 47.5665, stage1_neg_loss: 0.0090, stage1_mean_ious: 0.2078, stage1_s: 0.0000, stage1_m: 0.0116, stage1_l: 0.1259, stage1_h: 0.2112, loss: 0.8106, grad_norm: 0.5192
+2024-03-22 01:13:35,465 - mmdet - INFO - Epoch [2][350/360]	lr: 4.000e-02, eta: 1:35:56, time: 1.607, data_time: 0.026, memory: 9540, stage0_loss_instance_mil: 0.6623, stage0_bag_acc: 23.5565, stage0_mean_ious: 0.2085, stage0_s: 0.0000, stage0_m: 0.0043, stage0_l: 0.0988, stage0_h: 0.2153, stage1_loss_instance_mil: 0.1139, stage1_bag_acc: 40.2608, stage1_neg_loss: 0.0180, stage1_mean_ious: 0.2135, stage1_s: 0.0000, stage1_m: 0.0032, stage1_l: 0.0942, stage1_h: 0.2227, loss: 0.7941, grad_norm: 0.6309
+2024-03-22 01:13:51,768 - mmdet - INFO - Saving checkpoint at 2 epochs
+2024-03-22 01:20:21,919 - mmdet - INFO - Evaluating bbox...
+2024-03-22 01:20:23,981 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0173
+2024-03-22 01:20:23,981 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.0639
+2024-03-22 01:20:23,981 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0308
+2024-03-22 01:20:23,982 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0089
+2024-03-22 01:20:23,982 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0035
+2024-03-22 01:20:23,982 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0016
+2024-03-22 01:20:23,982 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0001
+2024-03-22 01:20:23,983 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0420
+2024-03-22 01:20:23,983 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0157
+2024-03-22 01:20:23,983 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0266
+2024-03-22 01:20:23,983 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0324
+2024-03-22 01:20:23,983 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.0324
+2024-03-22 01:20:23,984 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.0324
+2024-03-22 01:20:23,984 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0477
+2024-03-22 01:20:23,984 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0333
+2024-03-22 01:20:23,984 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0287
+2024-03-22 01:20:24,033 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-03-22 01:20:24,037 - mmdet - INFO - Epoch(val) [2][360]	eval_iter_num: 360, bbox_mAP: 0.0170, bbox_mAP_50: 0.0640, bbox_mAP_75: 0.0310, bbox_mAP_s: 0.0090, bbox_mAP_m: 0.0040, bbox_mAP_l: 0.0020, bbox_mAP_copypaste: 0.017 0.064 0.031 0.009 0.004 0.002
+2024-03-22 01:21:47,111 - mmdet - INFO - Epoch [3][50/360]	lr: 4.000e-02, eta: 1:33:22, time: 1.661, data_time: 0.077, memory: 9540, stage0_loss_instance_mil: 0.5975, stage0_bag_acc: 38.6594, stage0_mean_ious: 0.1864, stage0_s: 0.0000, stage0_m: 0.0026, stage0_l: 0.1601, stage0_h: 0.1779, stage1_loss_instance_mil: 0.1356, stage1_bag_acc: 63.1917, stage1_neg_loss: 0.0263, stage1_mean_ious: 0.1784, stage1_s: 0.0000, stage1_m: 0.0025, stage1_l: 0.1457, stage1_h: 0.1709, loss: 0.7594, grad_norm: 1.0450
+2024-03-22 01:23:06,793 - mmdet - INFO - Epoch [3][100/360]	lr: 4.000e-02, eta: 1:32:07, time: 1.594, data_time: 0.025, memory: 9540, stage0_loss_instance_mil: 0.6589, stage0_bag_acc: 27.6895, stage0_mean_ious: 0.2254, stage0_s: 0.0000, stage0_m: 0.0181, stage0_l: 0.1357, stage0_h: 0.2320, stage1_loss_instance_mil: 0.1623, stage1_bag_acc: 28.1195, stage1_neg_loss: 0.0225, stage1_mean_ious: 0.2244, stage1_s: 0.0000, stage1_m: 0.0224, stage1_l: 0.1382, stage1_h: 0.2298, loss: 0.8437, grad_norm: 1.1050
+2024-03-22 01:24:27,977 - mmdet - INFO - Epoch [3][150/360]	lr: 4.000e-02, eta: 1:30:57, time: 1.624, data_time: 0.026, memory: 9540, stage0_loss_instance_mil: 0.6918, stage0_bag_acc: 15.9411, stage0_mean_ious: 0.2533, stage0_s: 0.0012, stage0_m: 0.0058, stage0_l: 0.0978, stage0_h: 0.2606, stage1_loss_instance_mil: 0.1333, stage1_bag_acc: 13.2446, stage1_neg_loss: 0.0072, stage1_mean_ious: 0.2653, stage1_s: 0.0011, stage1_m: 0.0055, stage1_l: 0.0991, stage1_h: 0.2740, loss: 0.8323, grad_norm: 0.3632

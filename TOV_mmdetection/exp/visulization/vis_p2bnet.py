@@ -7,26 +7,12 @@ import cv2
 import torch
 import numpy as np
 
-coco_id_name_map = {1: 'person', 2: 'bicycle', 3: 'car', 4: 'motorcycle', 5: 'airplane',
-                    6: 'bus', 7: 'train', 8: 'truck', 9: 'boat', 10: 'traffic light',
-                    11: 'fire hydrant', 13: 'stop sign', 14: 'parking meter', 15: 'bench',
-                    16: 'bird', 17: 'cat', 18: 'dog', 19: 'horse', 20: 'sheep', 21: 'cow',
-                    22: 'elephant', 23: 'bear', 24: 'zebra', 25: 'giraffe', 27: 'backpack',
-                    28: 'umbrella', 31: 'handbag', 32: 'tie', 33: 'suitcase', 34: 'frisbee',
-                    35: 'skis', 36: 'snowboard', 37: 'sports ball', 38: 'kite', 39: 'baseball bat',
-                    40: 'baseball glove', 41: 'skateboard', 42: 'surfboard', 43: 'tennis racket',
-                    44: 'bottle', 46: 'wine glass', 47: 'cup', 48: 'fork', 49: 'knife', 50: 'spoon',
-                    51: 'bowl', 52: 'banana', 53: 'apple', 54: 'sandwich', 55: 'orange',
-                    56: 'broccoli', 57: 'carrot', 58: 'hot dog', 59: 'pizza', 60: 'donut',
-                    61: 'cake', 62: 'chair', 63: 'couch', 64: 'potted plant', 65: 'bed', 67: 'dining table',
-                    70: 'toilet', 72: 'tv', 73: 'laptop', 74: 'mouse', 75: 'remote', 76: 'keyboard',
-                    77: 'cell phone', 78: 'microwave', 79: 'oven', 80: 'toaster', 81: 'sink',
-                    82: 'refrigerator', 84: 'book', 85: 'clock', 86: 'vase', 87: 'scissors',
-                    88: 'teddy bear', 89: 'hair drier', 90: 'toothbrush'}
+coco_id_name_map = {0: 'missing hole', 1: 'mouse bite', 2: 'open circuit', 3: 'short', 4: 'spur',
+                    5: 'spurious copper'}
 mode = 2
 
 # 根目录文件
-root = 'data/coco/images/'
+root = 'data/coco/images/train'
 
 gt_path = "../TOV_mmdetection_cache/work_dir/coco/coco_1200_latest_pseudo_ann_1.json"
 # result_path = "coco/V_16_coco17_quasi_center_point/inference/my_coco_2014_minival/bbox.json"
@@ -53,6 +39,7 @@ for x in gt['images']:
 gt_bbox = defaultdict(list)
 gt_class = defaultdict(list)
 for x in gt['annotations']:
+    print(x)
     if x['image_id'] in img2id.values():
         gt_bbox[x['image_id']].append(x['bbox'])
         gt_class[x['image_id']].append(coco_id_name_map[x['category_id']])

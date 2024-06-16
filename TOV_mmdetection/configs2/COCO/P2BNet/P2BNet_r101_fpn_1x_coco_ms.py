@@ -48,7 +48,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=80,
+            num_classes=6,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -133,24 +133,22 @@ data = dict(
     train=dict(
         type=dataset_type,
         ann_file=data_root + "annotations_qc_pt/instances_train2017_coarse.json",
-        img_prefix=data_root + 'images/',  # 'train2017/',
+        img_prefix=data_root + 'images/' + 'train/',  # 'train2017/',
 
         pipeline=train_pipeline,
-        # min_gt_size=2
     ),
     val=dict(
         samples_per_gpu=2,
         type=dataset_type,
-        ann_file=data_root + "annotations_qc_pt/instances_train2017_coarse.json",
-        img_prefix=data_root + 'images',  # 'train2017/',
+        ann_file=data_root + "annotations_qc_pt/instances_test2017_coarse.json",
+        img_prefix=data_root + 'images/' + 'test/',  # 'train2017/',
         pipeline=test_pipeline,
         test_mode=False,  # modified
-        # min_gt_size=2
     ),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        img_prefix=data_root + 'val2017/',
+        ann_file=data_root + "annotations_qc_pt/instances_test2017_coarse.json",
+        img_prefix=data_root + 'images/' + 'test/',  # 'train2017/',
         pipeline=test_pipeline))
 
 check = dict(stop_while_nan=False)  # add by hui
@@ -165,7 +163,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.001,
     step=[8, 11])
-runner = dict(type='EpochBasedRunner', max_epochs=12)
+runner = dict(type='EpochBasedRunner', max_epochs=40)
 work_dir = '../'
 
 evaluation = dict(

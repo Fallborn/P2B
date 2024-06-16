@@ -48,7 +48,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=80,
+            num_classes=6,
             num_ref_fcs=0,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
@@ -83,7 +83,7 @@ model = dict(
             base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
             # gen_num_per_box=10,
             iou_thr=0.3,
-            gen_num_neg=500,
+            gen_num_neg=3500,
         ),
         rcnn=None
     ),
@@ -129,34 +129,49 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,  # 2
-    workers_per_gpu=2,  # didi-debug 2
+    samples_per_gpu=8,  # 2
+    workers_per_gpu=1,  # didi-debug 2
     shuffle=False if debug else None,
     train=dict(
         type=dataset_type,
         ann_file=data_root + "annotations_qc_pt/instances_train2017_coarse.json",
-        img_prefix=data_root + 'images/',  # 'train2017/',
+        img_prefix=data_root + 'images/'+ 'train/',  # 'train2017/',
 
         pipeline=train_pipeline,
     ),
     val=dict(
-        samples_per_gpu=2,
+        samples_per_gpu=16,
         type=dataset_type,
-        ann_file=data_root + "annotations_qc_pt/instances_train2017_coarse.json",
-        img_prefix=data_root + 'images',  # 'train2017/',
+        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
+        img_prefix=data_root + 'images' + '/train',
         pipeline=test_pipeline,
         test_mode=False,  # modified
     ),
     test=dict(
+        samples_per_gpu=16,
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        img_prefix=data_root + 'val2017/',
-        pipeline=test_pipeline))
+        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
+        img_prefix=data_root + 'images/' + 'train/',  # 'train2017/',
+        pipeline=test_pipeline,
+        test_mode=False,  # modified)
+    )
+)
 
 check = dict(stop_while_nan=False)  # add by hui
 
+#4和0.1目前最好
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+# optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.005)
+optimizer = dict(
+    type='AdamW',
+    lr=5e-05,
+    betas=(0.9, 0.999),
+    weight_decay=0.05,
+    paramwise_cfg=dict(
+        custom_keys=dict(
+            absolute_pos_embed=dict(decay_mult=0.0),
+            relative_position_bias_table=dict(decay_mult=0.0),
+            norm=dict(decay_mult=0.0))))
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -165,11 +180,11 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.001,
     step=[8, 11])
-runner = dict(type='EpochBasedRunner', max_epochs=12)
+runner = dict(type='EpochBasedRunner', max_epochs=24)
 work_dir = '../'
 
 evaluation = dict(
-    interval=12, metric='bbox',
+    interval=2, metric='bbox',
     save_result_file=work_dir + '_' + str(test_scale) + '_latest_result.json',
     do_first_eval=False,  # test
     do_final_eval=True,
