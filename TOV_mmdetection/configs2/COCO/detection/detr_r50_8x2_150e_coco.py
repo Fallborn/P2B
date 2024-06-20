@@ -2,7 +2,11 @@ _base_ = [
     '../_base_/datasets/coco_detection.py', '../_base_/default_runtime.py'
 ]
 
+optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.001)  # 8GPU
+
+total_epochs = 12
+max_epochs = 12
 
 model = dict(
     type='DETR',
@@ -167,4 +171,7 @@ data = dict(
         img_prefix=data_root + 'images' + '/test',
         pipeline=test_pipeline))
 
+lr_config = dict(policy='step', step=[100])
+
 evaluation = dict(interval=1, metric='bbox',do_final_eval=True)
+runner = dict(type='EpochBasedRunner', max_epochs=12)

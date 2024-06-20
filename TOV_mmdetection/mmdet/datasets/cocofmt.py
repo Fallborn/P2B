@@ -281,7 +281,7 @@ class CocoFmtDataset(CocoDataset):
                 raise KeyError(f'metric {metric} is not supported')
         if iou_thrs is None:
             iou_thrs = np.linspace(
-                .5, .5, int(np.round((.5 - .5) / .05)) + 1, endpoint=True)
+                .5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)
         if metric_items is not None:
             if not isinstance(metric_items, list):
                 metric_items = [metric_items]
