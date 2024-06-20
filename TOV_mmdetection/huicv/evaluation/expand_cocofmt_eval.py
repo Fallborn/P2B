@@ -369,8 +369,10 @@ class COCOExpandEval(COCOeval):
                 # stats.append(_summarize(1, iouThr=0.5, areaRng=self.params.areaRngLbl[i+1], maxDets=self.params.maxDets[2]))
                 stats.append(_summarize(1, areaRng=self.params.areaRngLbl[i+1], maxDets=self.params.maxDets[2]))
             stats.extend([_summarize(0, maxDets=self.params.maxDets[0]),
+                          _summarize(0, iouThr=.5, maxDets=self.params.maxDets[0]),
                           _summarize(0, maxDets=self.params.maxDets[1]),
-                          _summarize(0, maxDets=self.params.maxDets[2])])
+                          _summarize(0, maxDets=self.params.maxDets[2])],
+                         )
             for i in range(n):
                 stats.append(_summarize(0, areaRng=self.params.areaRngLbl[i+1], maxDets=self.params.maxDets[2]))
             return stats
