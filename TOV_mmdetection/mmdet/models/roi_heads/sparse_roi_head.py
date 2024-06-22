@@ -293,8 +293,8 @@ class SparseRoIHead(CascadeRoIHead):
                 _cls_score_per_img = cls_score_per_img.flatten(0, 1)
                 max_per_img = min(len(_cls_score_per_img), cfg.max_per_img)
                 scores_per_img, topk_indices = _cls_score_per_img.topk(max_per_img, sorted=False)
-
-                valid_mask = scores_per_img > cfg.score_thr
+                score_thr = 0.5
+                valid_mask = scores_per_img > score_thr
                 scores_per_img, topk_indices = scores_per_img[valid_mask], topk_indices[valid_mask]
 
                 labels_per_img = topk_indices % num_classes
