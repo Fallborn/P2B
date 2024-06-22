@@ -143,4 +143,4 @@ data = dict(
         img_prefix=data_root + 'images' + '/test',
         pipeline=test_pipeline))
 
-evaluation = dict(interval=2, metric='bbox',do_final_eval=True)
+evaluation = dict(interval=3, metric='bbox',do_final_eval=True)
