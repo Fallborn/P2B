@@ -57,8 +57,7 @@ model = dict(
         nms=dict(type='nms', iou_threshold=0.6),
         max_per_img=100))
 
-# data setting
-dataset_type = 'CocoDataset'
+dataset_type = 'CocoFmtDataset'
 data_root = 'data/coco/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -83,13 +82,12 @@ test_pipeline = [
             dict(type='RandomFlip'),
             dict(type='Normalize', **img_norm_cfg),
             dict(type='Pad', size_divisor=32),
-            dict(type='DefaultFormatBundle'),
+            dict(type='ImageToTensor', keys=['img']),
             dict(type='Collect', keys=['img']),
         ])
 ]
-
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=16,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
