@@ -1,124 +1,11 @@
 import warnings
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule
 from mmcv.runner import BaseModule, auto_fp16
-from mmcv.ops import DeformConv2d
 
 from ..builder import NECKS
-
-class MDA(nn.Module):
-    def __init__(self, channels, factor=32, ratio=16):
-        super(MDA, self).__init__()
-        self.groups = factor
-        assert channels // self.groups > 0
-
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.max_pool = nn.AdaptiveMaxPool2d(1)
-        self.fc = nn.Sequential(
-            nn.Conv2d(channels // self.groups, (channels // self.groups) // ratio, 1, bias=False),
-            nn.ReLU(inplace=True),
-            nn.Conv2d((channels // self.groups) // ratio, channels // self.groups, 1, bias=False)
-        )
-        self.sigmoid = nn.Sigmoid()
-
-        self.pool_h = nn.AdaptiveAvgPool2d((None, 1))
-        self.pool_w = nn.AdaptiveAvgPool2d((1, None))
-        self.gn = nn.GroupNorm(channels // self.groups, channels // self.groups)
-
-        self.conv1x1_reduce = nn.Conv2d(channels // self.groups, (channels // self.groups) // 2, kernel_size=1,
-                                        stride=1, padding=0)
-        self.conv1x1_restore = nn.Conv2d((channels // self.groups) // 2, channels // self.groups, kernel_size=1,
-                                         stride=1, padding=0)
-        self.conv3x3_1 = nn.Conv2d(channels // self.groups, channels // self.groups, kernel_size=3, stride=1, padding=1)
-        self.conv3x3_2 = nn.Conv2d(channels // self.groups, channels // self.groups, kernel_size=3, stride=1, padding=1)
-
-    def forward(self, x):
-        print("mda here")
-        b, c, h, w = x.size()
-        group_x = x.reshape(b * self.groups, -1, h, w)  # b*g, c//g, h, w
-
-        # First route
-        x_r1 = self.conv1x1_reduce(group_x)  # dimension reduction, now b*g, c//g//2, h, w
-        x_h = self.pool_h(x_r1)
-        x_w = self.pool_w(x_r1).permute(0, 1, 3, 2)
-        hw = self.conv1x1_restore(torch.cat([x_h, x_w], dim=2))  # restore dimension, now b*g, c//g, h, w
-        hw = hw.sigmoid()  # apply sigmoid
-
-        # Element-wise multiplication with the initial group_x
-        out = group_x * hw  # this shape is same as group_x
-
-        # Channel wise attention as described in CA
-        avg_out = self.fc(self.avg_pool(out))
-        max_out = self.fc(self.max_pool(out))
-        out_ca = avg_out + max_out
-        out_ca = self.sigmoid(out_ca)  # Channel wise coefficient
-
-        # Second route
-        x_r2 = self.conv3x3_1(group_x)
-        x_r2 = self.gn(x_r2)
-        x_r2 = self.conv3x3_2(x_r2)
-
-        # Multiply with coefficient
-        x_r2 = out_ca.expand_as(x_r2) * x_r2
-
-        # Combine routes
-        out = out + x_r2
-
-        weights = out.sigmoid()
-
-        return (group_x * weights).reshape(b, c, h, w)  # back to the original shape
-
-
-class ChannelAttention(nn.Module):
-    def __init__(self, in_planes, ratio=16):
-        super(ChannelAttention, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.max_pool = nn.AdaptiveMaxPool2d(1)
-
-        self.fc1 = nn.Conv2d(in_planes, in_planes // ratio, 1, bias=False)
-        self.relu1 = nn.ReLU()
-        self.fc2 = nn.Conv2d(in_planes // ratio, in_planes, 1, bias=False)
-
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x):
-        avg_out = self.fc2(self.relu1(self.fc1(self.avg_pool(x))))
-        max_out = self.fc2(self.relu1(self.fc1(self.max_pool(x))))
-        out = avg_out + max_out
-        return self.sigmoid(out)
-
-
-class SpatialAttention(nn.Module):
-    def __init__(self, kernel_size=7):
-        super(SpatialAttention, self).__init__()
-
-        assert kernel_size in (3, 7), 'kernel size must be 3 or 7'
-        padding = 3 if kernel_size == 7 else 1
-
-        self.conv1 = nn.Conv2d(2, 1, kernel_size, padding=padding, bias=False)
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x):
-        avg_out = torch.mean(x, dim=1, keepdim=True)
-        max_out, _ = torch.max(x, dim=1, keepdim=True)
-        x = torch.cat([avg_out, max_out], dim=1)
-        x = self.conv1(x)
-        return self.sigmoid(x)
-
-
-class CBAM(nn.Module):
-    def __init__(self, in_planes):
-        super(CBAM, self).__init__()
-        self.ca = ChannelAttention(in_planes)
-        self.sa = SpatialAttention()
-
-    def forward(self, x):
-        x = self.ca(x) * x
-        x = self.sa(x) * x
-        return x
 
 
 @NECKS.register_module()
@@ -203,10 +90,7 @@ class FPNPADNN(BaseModule):
         self.no_norm_on_lateral = no_norm_on_lateral
         self.fp16_enabled = False
         self.upsample_cfg = upsample_cfg.copy()
-        self.cbam = CBAM(out_channels)
-        self.offsets = nn.Conv2d(out_channels,2*3*3, kernel_size=3, stride=1, padding=1)
-        self.dcn = DeformConv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, deformable_groups=1)
-        self.mda = MDA(out_channels)
+
         if end_level == -1:
             self.backbone_end_level = self.num_ins
             # assert num_outs >= self.num_ins - start_level   # change by hui
@@ -237,7 +121,6 @@ class FPNPADNN(BaseModule):
         self.fpn_convs = nn.ModuleList()
 
         for i in range(self.start_level, self.backbone_end_level):
-            # 1*1卷积,降纬
             l_conv = ConvModule(
                 in_channels[i],
                 out_channels,
@@ -283,7 +166,8 @@ class FPNPADNN(BaseModule):
     @auto_fp16()
     def forward(self, inputs):
         """Forward function."""
-        print("forward padnn")
+        print("forward fpn padnn")
+
         assert len(inputs) == len(self.in_channels)
 
         # build laterals
@@ -307,24 +191,15 @@ class FPNPADNN(BaseModule):
 
         # build outputs
         # part 1: from original levels
-        # outs = [
-        #     self.fpn_convs[i](laterals[i]) for i in range(min(used_backbone_levels, self.num_outs))  # change by hui
-        # ]
-        print("outs before")
-        fsa
         outs = [
-            self.mda(self.fpn_convs[i](laterals[i]))  # 修改该行以在每一层 fpn_conv 后应用 CBAM
-            for i in range(min(used_backbone_levels, self.num_outs))
+            self.fpn_convs[i](laterals[i]) for i in range(min(used_backbone_levels, self.num_outs))  # change by hui
         ]
-        print("mda after")
-
         # part 2: add extra levels
         if self.num_outs > len(outs):
             # use max pool to get more levels on top of outputs
             # (e.g., Faster R-CNN, Mask R-CNN)
             if not self.add_extra_convs:
                 for i in range(self.num_outs - used_backbone_levels):
-                    # b,c,w/2,h/2，直接输出了
                     outs.append(F.max_pool2d(outs[-1], 1, stride=2))
             # add conv layers on top of original feature maps (RetinaNet)
             else:
@@ -342,8 +217,4 @@ class FPNPADNN(BaseModule):
                         outs.append(self.fpn_convs[i](F.relu(outs[-1])))
                     else:
                         outs.append(self.fpn_convs[i](outs[-1]))
-
-            offsets = self.offsets(outs[-1])
-            dcn_out = self.dcn(outs[-1],offsets)
-            outs[-1] = dcn_out
         return tuple(outs)
