@@ -4,6 +4,66 @@ from mmcv.cnn import ConvModule
 from ..builder import HEADS
 from .anchor_head import AnchorHead
 
+class MDA(nn.Module):
+    def __init__(self, channels, factor=32, ratio=16):
+        super(MDA, self).__init__()
+        self.groups = factor
+        assert channels // self.groups > 0
+
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Conv2d(channels // self.groups, (channels // self.groups) // ratio, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d((channels // self.groups) // ratio, channels // self.groups, 1, bias=False)
+        )
+        self.sigmoid = nn.Sigmoid()
+
+        self.pool_h = nn.AdaptiveAvgPool2d((None, 1))
+        self.pool_w = nn.AdaptiveAvgPool2d((1, None))
+        self.gn = nn.GroupNorm(channels // self.groups, channels // self.groups)
+
+        self.conv1x1_reduce = nn.Conv2d(channels // self.groups, (channels // self.groups) // 2, kernel_size=1,
+                                        stride=1, padding=0)
+        self.conv1x1_restore = nn.Conv2d((channels // self.groups) // 2, channels // self.groups, kernel_size=1,
+                                         stride=1, padding=0)
+        self.conv3x3_1 = nn.Conv2d(channels // self.groups, channels // self.groups, kernel_size=3, stride=1, padding=1)
+        self.conv3x3_2 = nn.Conv2d(channels // self.groups, channels // self.groups, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        b, c, h, w = x.size()
+        group_x = x.reshape(b * self.groups, -1, h, w)  # b*g, c//g, h, w
+
+        # First route
+        x_r1 = self.conv1x1_reduce(group_x)  # dimension reduction, now b*g, c//g//2, h, w
+        x_h = self.pool_h(x_r1)
+        x_w = self.pool_w(x_r1).permute(0, 1, 3, 2)
+        hw = self.conv1x1_restore(torch.cat([x_h, x_w], dim=2))  # restore dimension, now b*g, c//g, h, w
+        hw = hw.sigmoid()  # apply sigmoid
+
+        # Element-wise multiplication with the initial group_x
+        out = group_x * hw  # this shape is same as group_x
+
+        # Channel wise attention as described in CA
+        avg_out = self.fc(self.avg_pool(out))
+        max_out = self.fc(self.max_pool(out))
+        out_ca = avg_out + max_out
+        out_ca = self.sigmoid(out_ca)  # Channel wise coefficient
+
+        # Second route
+        x_r2 = self.conv3x3_1(group_x)
+        x_r2 = self.gn(x_r2)
+        x_r2 = self.conv3x3_2(x_r2)
+
+        # Multiply with coefficient
+        x_r2 = out_ca.expand_as(x_r2) * x_r2
+
+        # Combine routes
+        out = out + x_r2
+
+        weights = out.sigmoid()
+
+        return (group_x * weights).reshape(b, c, h, w)  # back to the original shape
 
 @HEADS.register_module()
 class RetinaHead(AnchorHead):
@@ -109,6 +169,10 @@ class RetinaHead(AnchorHead):
             cls_feat = cls_conv(cls_feat)
         for reg_conv in self.reg_convs:
             reg_feat = reg_conv(reg_feat)
+        # print(cls_feat.size())
+        # print(reg_feat.size())
+        # mda_test = MDA(256)
+        # cls_feat = mda_test(cls_feat)
         cls_score = self.retina_cls(cls_feat)
         bbox_pred = self.retina_reg(reg_feat)
         return cls_score, bbox_pred

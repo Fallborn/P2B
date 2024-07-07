@@ -33,9 +33,6 @@ class GroupSampler(Sampler):
             indice = np.concatenate(
                 [indice, np.random.choice(indice, num_extra)])
             indices.append(indice)
-        print("11111111111")
-        print(self.group_sizes)
-        print("11111111111")
 
         indices = np.concatenate(indices)
         indices = [
