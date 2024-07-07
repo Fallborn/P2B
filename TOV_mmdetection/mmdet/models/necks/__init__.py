@@ -11,7 +11,7 @@ from .nasfcos_fpn import NASFCOS_FPN
 from .pafpn import PAFPN
 from .rfp import RFP
 from .yolo_neck import YOLOV3Neck
-from .fpn_attention import FPNPADNN
+from .fpn_padnn import FPNPADNN
 __all__ = [
     'FPN', 'FPNPADNN','BFP', 'ChannelMapper', 'HRFPN', 'NASFPN', 'FPN_CARAFE', 'PAFPN',
     'NASFCOS_FPN', 'RFP', 'YOLOV3Neck', 'FPG', 'DilatedEncoder', 'CTResNetNeck'
