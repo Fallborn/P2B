@@ -12,7 +12,7 @@ from ..builder import NECKS
 
 #还没加inception，记得！！！！！
 class MDA(nn.Module):
-    def __init__(self, channels, factor=32, ratio=4):
+    def __init__(self, channels, factor=16, ratio=4):
         super(MDA, self).__init__()
         self.groups = factor
         assert channels // self.groups > 0
@@ -36,14 +36,15 @@ class MDA(nn.Module):
                                          stride=1, padding=0)
         self.conv3x3_1 = nn.Conv2d(channels // self.groups, channels // self.groups, kernel_size=3, stride=1, padding=1)
         self.conv3x3_dynamic = ConvModule(channels // self.groups, channels // self.groups, 3, stride=1,padding=1, conv_cfg= dict(type='DCNv2', deform_groups=1))
+        self.involution = Involution(channels // self.groups, kernel_size=3, stride=1, group_channels=8, reduction_ratio=4)
 
     def forward(self, x):
-        print("mda here")
         b, c, h, w = x.size()
         group_x = x.reshape(b * self.groups, -1, h, w)  # b*g, c//g, h, w
 
         # First route
-        x_r1 = self.conv1x1_reduce(group_x)  # dimension reduction, now b*g, c//g//2, h, w
+        x_r1 = self.involution(group_x)
+        x_r1 = self.conv1x1_reduce(x_r1)  # dimension reduction, now b*g, c//g//2, h, w
         x_h = self.pool_h(x_r1)
         x_w = self.pool_w(x_r1).permute(0, 1, 3, 2)
         hw = self.conv1x1_restore(torch.cat([x_h, x_w], dim=2))  # restore dimension, now b*g, c//g, h, w
@@ -74,6 +75,55 @@ class MDA(nn.Module):
 
         return (group_x * weights).reshape(b, c, h, w)  # back to the original shape
 
+class Involution(nn.Module):
+    def __init__(self, channels, kernel_size=7, stride=1, group_channels=16, reduction_ratio=2):
+        super().__init__()
+        # assert not (channels % group_channels or channels % reduction_ratio)
+
+        # in_c=out_c
+        self.channels = channels
+        self.kernel_size = kernel_size
+        self.stride = stride
+
+        # 每组多少个通道
+        self.group_channels = group_channels
+        self.groups = channels // group_channels
+
+        # reduce channels
+        self.reduce = nn.Sequential(
+            nn.Conv2d(channels, channels // reduction_ratio, 1),
+            nn.BatchNorm2d(channels // reduction_ratio),
+            nn.ReLU(inplace=False)
+        )
+        # span channels
+        self.span = nn.Conv2d(
+            channels // reduction_ratio,
+            self.groups * kernel_size ** 2,
+            1
+        )
+
+        self.down_sample = nn.AvgPool2d(stride) if stride != 1 else nn.Identity()
+        self.unfold = nn.Unfold(kernel_size, padding=(kernel_size - 1) // 2, stride=stride)
+
+    def forward(self, x):
+        # generate involution kernel: (b,G*K*K,h,w)
+        weight_matrix = self.span(self.reduce(self.down_sample(x)))
+        b, _, h, w = weight_matrix.shape
+
+        # unfold input: (b,C*K*K,h,w)
+        x_unfolded = self.unfold(x)
+        # (b,C*K*K,h,w)->(b,G,C//G,K*K,h,w)
+        x_unfolded = x_unfolded.view(b, self.groups, self.group_channels, self.kernel_size ** 2, h, w)
+
+        # (b,G*K*K,h,w) -> (b,G,1,K*K,h,w)
+        weight_matrix = weight_matrix.view(b, self.groups, 1, self.kernel_size ** 2, h, w)
+        # clear the nan value
+        epsilon = torch.finfo(x_unfolded.dtype).eps
+        mul_add = (weight_matrix * x_unfolded + epsilon).sum(dim=3)
+
+        out = mul_add.view(b, self.channels, h, w)
+
+        return out
 
 class ChannelAttention(nn.Module):
     def __init__(self, in_planes, ratio=16):
