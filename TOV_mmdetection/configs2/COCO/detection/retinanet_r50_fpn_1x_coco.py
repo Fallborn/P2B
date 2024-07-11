@@ -4,7 +4,7 @@ _base_ = [
     '../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py'
 ]
 # optimizer
-optimizer = dict(type='SGD', lr=0.015, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 dataset_type = 'CocoFmtDataset'
 data_root = 'data/coco/'
 
@@ -56,4 +56,4 @@ data = dict(
         img_prefix=data_root + 'images' + '/test',
         pipeline=test_pipeline))
 
-evaluation = dict(interval=2, metric='bbox',do_final_eval=True)
+evaluation = dict(interval=1, metric='bbox',do_final_eval=True)
