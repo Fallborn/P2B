@@ -260,6 +260,9 @@ class FPNPADNN(BaseModule):
         self.offsets = nn.Conv2d(out_channels,2*3*3, kernel_size=3, stride=1, padding=1)
         self.dcn = DeformConv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, deformable_groups=1)
         self.mda = MDA(out_channels)
+        self.ca = ChannelAttention(out_channels)
+        self.cbam = CBAM(out_channels)
+
         if end_level == -1:
             self.backbone_end_level = self.num_ins
             # assert num_outs >= self.num_ins - start_level   # change by hui
@@ -335,6 +338,7 @@ class FPNPADNN(BaseModule):
 
     @auto_fp16()
     def forward(self, inputs):
+        print(self.ca)
         """Forward function."""
         # assert False, "PADNN forward is called"
         # assert len(inputs) == len(self.in_channels)
@@ -365,7 +369,7 @@ class FPNPADNN(BaseModule):
         # ]
 
         outs = [
-            self.mda(self.fpn_convs[i](laterals[i]))  # 修改该行以在每一层 fpn_conv 后应用 CBAM
+            self.cbam(self.fpn_convs[i](laterals[i]))  # 修改该行以在每一层 fpn_conv 后应用 CBAM
             for i in range(min(used_backbone_levels, self.num_outs))
         ]
 
