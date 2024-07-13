@@ -4,7 +4,7 @@ _base_ = [
     '../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py'
 ]
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.03, momentum=0.9, weight_decay=0.0001)
 dataset_type = 'CocoFmtDataset'
 data_root = 'data/coco/'
 
@@ -39,7 +39,7 @@ test_pipeline = [
 
 data = dict(
     samples_per_gpu=16,
-    workers_per_gpu=2,
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         ann_file='/home/lxz/P2BNet/TOV_mmdetection_cache/work_dir/coco/coco_1200_latest_pseudo_ann_neu_det.json',
