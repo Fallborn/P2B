@@ -338,7 +338,6 @@ class FPNPADNN(BaseModule):
 
     @auto_fp16()
     def forward(self, inputs):
-        print(self.ca)
         """Forward function."""
         # assert False, "PADNN forward is called"
         # assert len(inputs) == len(self.in_channels)
@@ -369,7 +368,7 @@ class FPNPADNN(BaseModule):
         # ]
 
         outs = [
-            self.cbam(self.fpn_convs[i](laterals[i]))  # 修改该行以在每一层 fpn_conv 后应用 CBAM
+            self.mda(self.fpn_convs[i](laterals[i]))  # 修改该行以在每一层 fpn_conv 后应用 CBAM
             for i in range(min(used_backbone_levels, self.num_outs))
         ]
 
