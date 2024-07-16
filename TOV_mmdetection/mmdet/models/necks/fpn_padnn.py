@@ -261,7 +261,6 @@ class FPNPADNN(BaseModule):
         self.dcn = DeformConv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, deformable_groups=1)
         self.mda = MDA(out_channels)
         self.ca = ChannelAttention(out_channels)
-        self.cbam = CBAM(out_channels)
 
         if end_level == -1:
             self.backbone_end_level = self.num_ins
@@ -368,7 +367,7 @@ class FPNPADNN(BaseModule):
         # ]
 
         outs = [
-            self.mda(self.fpn_convs[i](laterals[i]))  # 修改该行以在每一层 fpn_conv 后应用 CBAM
+            self.fpn_convs[i](laterals[i])+0.005self.mda(self.fpn_convs[i](laterals[i]))  # 修改该行以在每一层 fpn_conv 后应用 CBAM
             for i in range(min(used_backbone_levels, self.num_outs))
         ]
 
