@@ -4,7 +4,7 @@ _base_ = [
     '../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py'
 ]
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.001)  # 8GPU
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.00001)  # 8GPU
 dataset_type = 'CocoFmtDataset'
 data_root = 'data/coco/'
 
