@@ -367,7 +367,7 @@ class FPNPADNN(BaseModule):
         # ]
 
         outs = [
-            self.fpn_convs[i](laterals[i])+0.005self.mda(self.fpn_convs[i](laterals[i]))  # 修改该行以在每一层 fpn_conv 后应用 CBAM
+            self.fpn_convs[i](laterals[i]+0.005*self.mda(laterals[i])) # 修改该行以在每一层 fpn_conv 后应用 CBAM
             for i in range(min(used_backbone_levels, self.num_outs))
         ]
 
