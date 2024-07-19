@@ -231,6 +231,8 @@ class RetinaHeadPADNN(AnchorHead):
         self.ca_reg = ChannelAttention(self.feat_channels)
         self.cbam_cls = CBAM(self.feat_channels)
         self.cbam_reg = CBAM(self.feat_channels)
+        self.sa_cls = SpatialAttention()
+        self.sa_reg = SpatialAttention()
 
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
@@ -256,10 +258,13 @@ class RetinaHeadPADNN(AnchorHead):
         # self.reg_convs.insert(len(self.reg_convs)-1,self.mda_reg)
         # self.cls_convs.append(self.mda_cls)
         # self.reg_convs.append(self.mda_reg)
-        self.cls_convs.append(self.ca_cls)
-        self.reg_convs.append(self.ca_reg)
+        # self.cls_convs.append(self.ca_cls)
+        # self.reg_convs.append(self.ca_reg)
         # self.cls_convs.append(self.cbam_cls)
         # self.reg_convs.append(self.cbam_reg)
+        self.cls_convs.append(self.sa_cls)
+        self.reg_convs.append(self.sa_reg)
+
 
         self.retina_cls = nn.Conv2d(
             self.feat_channels,
