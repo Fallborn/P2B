@@ -254,16 +254,17 @@ class RetinaHeadPADNN(AnchorHead):
                     padding=1,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg))
-        # self.cls_convs.insert(len(self.cls_convs)-1,self.mda_cls)
-        # self.reg_convs.insert(len(self.reg_convs)-1,self.mda_reg)
+
+        self.cls_convs.append(self.mda_cls)
+        self.reg_convs.append(self.mda_reg)
         # self.cls_convs.append(self.mda_cls)
         # self.reg_convs.append(self.mda_reg)
         # self.cls_convs.append(self.ca_cls)
         # self.reg_convs.append(self.ca_reg)
         # self.cls_convs.append(self.cbam_cls)
         # self.reg_convs.append(self.cbam_reg)
-        self.cls_convs.append(self.sa_cls)
-        self.reg_convs.append(self.sa_reg)
+        # self.cls_convs.append(self.sa_cls)
+        # self.reg_convs.append(self.sa_reg)
 
 
         self.retina_cls = nn.Conv2d(
