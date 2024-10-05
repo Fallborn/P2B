@@ -295,13 +295,13 @@ class RetinaHeadPADNN(AnchorHead):
                 cls_feat = cls_conv(cls_feat)
 
             else:
-                cls_feat = cls_feat + 0.001*cls_conv(cls_feat)
+                cls_feat = cls_feat + 0.00001*cls_conv(cls_feat)
 
         for i, reg_conv in enumerate(self.reg_convs):
             if i != len(self.reg_convs)-1:
                 reg_feat = reg_conv(reg_feat)
             else:
-                reg_feat = reg_feat + 0.001*cls_conv(reg_feat)
+                reg_feat = reg_feat + 0.00001*cls_conv(reg_feat)
 
         cls_score = self.retina_cls(cls_feat)
         bbox_pred = self.retina_reg(reg_feat)
