@@ -1,5 +1,3 @@
-import warnings
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -7,11 +5,14 @@ from mmcv.cnn import ConvModule
 from mmcv.runner import BaseModule, auto_fp16
 from mmcv.ops import DeformConv2d
 
+
 from ..builder import NECKS
+
+#还没加inception，记得！！！！！
 from .padnn import MDA, Involution, CBAM, ChannelAttention, SpatialAttention
 
 @NECKS.register_module()
-class FPNPADNN(BaseModule):
+class FPNPADNNDFF(BaseModule):
     r"""Feature Pyramid Network.
 
     This is an implementation of paper `Feature Pyramid Networks for Object
@@ -82,7 +83,7 @@ class FPNPADNN(BaseModule):
                  upsample_cfg=dict(mode='nearest'),
                  init_cfg=dict(
                      type='Xavier', layer='Conv2d', distribution='uniform')):
-        super(FPNPADNN, self).__init__(init_cfg)
+        super(FPNPADNNDFF, self).__init__(init_cfg)
         assert isinstance(in_channels, list)
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -95,9 +96,9 @@ class FPNPADNN(BaseModule):
         # self.cbam = CBAM(out_channels)
         self.offsets = nn.Conv2d(out_channels,2*3*3, kernel_size=3, stride=1, padding=1)
         self.dcn = DeformConv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, deformable_groups=1)
-        self.mda = MDA(out_channels,cfl = True, dff = True)
-        self.ca = ChannelAttention(out_channels)
-        self.sa = SpatialAttention()
+        self.mda = MDA(out_channels,cfl = False, dff = True)
+        # self.ca = ChannelAttention(out_channels)
+        # self.sa = SpatialAttention()
 
         if end_level == -1:
             self.backbone_end_level = self.num_ins
@@ -204,7 +205,7 @@ class FPNPADNN(BaseModule):
         # ]
 
         outs = [
-            self.fpn_convs[i](laterals[i]) + 0.1*self.fpn_convs[i](self.mda(laterals[i])) # 修改该行以在每一层 fpn_conv 后应用 CBAM
+            self.fpn_convs[i](laterals[i]+0.00001*self.mda(laterals[i])) # 修改该行以在每一层 fpn_conv 后应用 CBAM
             for i in range(min(used_backbone_levels, self.num_outs))
         ]
 

@@ -12,7 +12,9 @@ from .pafpn import PAFPN
 from .rfp import RFP
 from .yolo_neck import YOLOV3Neck
 from .fpn_padnn import FPNPADNN
+from .fpn_padnn_with_cfl import FPNPADNNCFL
+from .fpn_padnn_with_dff import FPNPADNNDFF
 __all__ = [
     'FPN', 'FPNPADNN','BFP', 'ChannelMapper', 'HRFPN', 'NASFPN', 'FPN_CARAFE', 'PAFPN',
-    'NASFCOS_FPN', 'RFP', 'YOLOV3Neck', 'FPG', 'DilatedEncoder', 'CTResNetNeck'
+    'NASFCOS_FPN', 'RFP', 'YOLOV3Neck', 'FPG', 'DilatedEncoder', 'CTResNetNeck', 'FPNPADNNCFL','FPNPADNNDFF'
 ]
