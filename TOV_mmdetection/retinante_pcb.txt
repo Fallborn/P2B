@@ -7119,3 +7119,359 @@ DONE (t=0.11s).
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0000
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.3321
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.4061
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+[                                                  ] 0/70, elapsed: 0s, ETA:forward fpn
+[                                  ] 1/70, 3.2 task/s, elapsed: 0s, ETA:    22sforward fpn
+[                                  ] 2/70, 5.3 task/s, elapsed: 0s, ETA:    13sforward fpn
+[>                                 ] 3/70, 6.7 task/s, elapsed: 0s, ETA:    10sforward fpn
+[>                                 ] 4/70, 7.8 task/s, elapsed: 1s, ETA:     8sforward fpn
+[>>                                ] 5/70, 8.6 task/s, elapsed: 1s, ETA:     8sforward fpn
+[>>                                ] 6/70, 9.3 task/s, elapsed: 1s, ETA:     7sforward fpn
+[>>>                               ] 7/70, 9.8 task/s, elapsed: 1s, ETA:     6sforward fpn
+[>>>                              ] 8/70, 10.2 task/s, elapsed: 1s, ETA:     6sforward fpn
+[>>>>                             ] 9/70, 10.6 task/s, elapsed: 1s, ETA:     6sforward fpn
+[>>>>                            ] 10/70, 10.9 task/s, elapsed: 1s, ETA:     5sforward fpn
+[>>>>>                           ] 11/70, 11.2 task/s, elapsed: 1s, ETA:     5sforward fpn
+[>>>>>                           ] 12/70, 11.5 task/s, elapsed: 1s, ETA:     5sforward fpn
+[>>>>>                           ] 13/70, 11.7 task/s, elapsed: 1s, ETA:     5sforward fpn
+[>>>>>>                          ] 14/70, 11.9 task/s, elapsed: 1s, ETA:     5sforward fpn
+[>>>>>>                          ] 15/70, 12.0 task/s, elapsed: 1s, ETA:     5sforward fpn
+[>>>>>>>                         ] 16/70, 12.2 task/s, elapsed: 1s, ETA:     4sforward fpn
+[>>>>>>>                         ] 17/70, 12.4 task/s, elapsed: 1s, ETA:     4sforward fpn
+[>>>>>>>>                        ] 18/70, 12.6 task/s, elapsed: 1s, ETA:     4sforward fpn
+[>>>>>>>>                        ] 19/70, 12.7 task/s, elapsed: 1s, ETA:     4sforward fpn
+[>>>>>>>>>                       ] 20/70, 12.8 task/s, elapsed: 2s, ETA:     4sforward fpn
+[>>>>>>>>>                       ] 21/70, 13.0 task/s, elapsed: 2s, ETA:     4sforward fpn
+[>>>>>>>>>>                      ] 22/70, 13.1 task/s, elapsed: 2s, ETA:     4sforward fpn
+[>>>>>>>>>>                      ] 23/70, 13.2 task/s, elapsed: 2s, ETA:     4sforward fpn
+[>>>>>>>>>>                      ] 24/70, 13.3 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>                     ] 25/70, 13.4 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>                     ] 26/70, 13.5 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>                    ] 27/70, 13.6 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>                    ] 28/70, 13.7 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>                   ] 29/70, 13.7 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>                   ] 30/70, 13.8 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>                  ] 31/70, 13.9 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>                  ] 32/70, 13.9 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>                 ] 33/70, 14.0 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>                 ] 34/70, 14.1 task/s, elapsed: 2s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>>                ] 35/70, 14.1 task/s, elapsed: 2s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>                ] 36/70, 14.2 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>                ] 37/70, 14.2 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>               ] 38/70, 14.2 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>               ] 39/70, 14.2 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>              ] 40/70, 14.2 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>              ] 41/70, 14.2 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>             ] 42/70, 14.3 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>             ] 43/70, 14.3 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>            ] 44/70, 14.3 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>            ] 45/70, 14.3 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>           ] 46/70, 14.3 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>           ] 47/70, 14.4 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>           ] 48/70, 14.4 task/s, elapsed: 3s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>          ] 49/70, 14.4 task/s, elapsed: 3s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>          ] 50/70, 14.4 task/s, elapsed: 3s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>         ] 51/70, 14.5 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>         ] 52/70, 14.5 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>        ] 53/70, 14.5 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>        ] 54/70, 14.5 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>       ] 55/70, 14.5 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>       ] 56/70, 14.5 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 57/70, 14.6 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 58/70, 14.6 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 59/70, 14.6 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>     ] 60/70, 14.7 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>     ] 61/70, 14.7 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>    ] 62/70, 14.7 task/s, elapsed: 4s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>    ] 63/70, 14.8 task/s, elapsed: 4s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   ] 64/70, 14.8 task/s, elapsed: 4s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   ] 65/70, 14.8 task/s, elapsed: 4s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  ] 66/70, 14.9 task/s, elapsed: 4s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  ] 67/70, 14.9 task/s, elapsed: 4s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ] 68/70, 15.0 task/s, elapsed: 5s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ] 69/70, 15.0 task/s, elapsed: 5s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 70/70, 15.1 task/s, elapsed: 5s, ETA:     0sLoading and preparing results...
+DONE (t=0.01s)
+creating index...
+index created!
+{'cocoGt': <mmdet.datasets.api_wrappers.coco_api.COCO object at 0x7f9edb9f2290>, 'cocoDt': <pycocotools.coco.COCO object at 0x7f9edfe610d0>, 'evalImgs': defaultdict(<class 'list'>, {}), 'eval': {}, '_gts': defaultdict(<class 'list'>, {}), '_dts': defaultdict(<class 'list'>, {}), 'params': <huicv.evaluation.expand_cocofmt_eval.ExpandParam object at 0x7f9edba7d3d0>, '_paramsEval': {}, 'stats': [], 'ious': {}, 'use_ignore_attr': False, 'use_iod_for_ignore': False, 'ignore_uncertain': False, 'iod_th_of_iou_f': <function <lambda> at 0x7f9edff5af80>}
+{'evaluate_standard': 'coco', 'catIds': [0, 1, 2, 3, 4, 5], 'iouThrs': array([0.5 , 0.55, 0.6 , 0.65, 0.7 , 0.75, 0.8 , 0.85, 0.9 , 0.95]), 'recThrs': array([0.  , 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1 ,
+       0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2 , 0.21,
+       0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.3 , 0.31, 0.32,
+       0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39, 0.4 , 0.41, 0.42, 0.43,
+       0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.5 , 0.51, 0.52, 0.53, 0.54,
+       0.55, 0.56, 0.57, 0.58, 0.59, 0.6 , 0.61, 0.62, 0.63, 0.64, 0.65,
+       0.66, 0.67, 0.68, 0.69, 0.7 , 0.71, 0.72, 0.73, 0.74, 0.75, 0.76,
+       0.77, 0.78, 0.79, 0.8 , 0.81, 0.82, 0.83, 0.84, 0.85, 0.86, 0.87,
+       0.88, 0.89, 0.9 , 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98,
+       0.99, 1.  ]), 'maxDets': [100, 300, 1000], 'areaRng': [[0, 10000000000.0], [0, 1024], [1024, 9216], [9216, 10000000000.0]], 'areaRngLbl': ['all', 'small', 'medium', 'large'], 'useCats': 1, 'iouType': 'bbox', 'useSegm': None}
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=0.12s).
+Accumulating evaluation results...
+DONE (t=0.09s).
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0376
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.0867
+ Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0691
+ Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0373
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0237
+ Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0117
+ Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0010
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0337
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0375
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0626
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0967
+ Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.1804
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.0967
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.0967
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0333
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0982
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0625
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+forward fpn
+[                                                  ] 0/70, elapsed: 0s, ETA:forward fpn
+[                                  ] 1/70, 2.2 task/s, elapsed: 0s, ETA:    31sforward fpn
+[                                  ] 2/70, 3.8 task/s, elapsed: 1s, ETA:    18sforward fpn
+[>                                 ] 3/70, 5.1 task/s, elapsed: 1s, ETA:    13sforward fpn
+[>                                 ] 4/70, 4.8 task/s, elapsed: 1s, ETA:    14sforward fpn
+[>>                                ] 5/70, 5.6 task/s, elapsed: 1s, ETA:    12sforward fpn
+[>>                                ] 6/70, 6.2 task/s, elapsed: 1s, ETA:    10sforward fpn
+[>>>                               ] 7/70, 5.8 task/s, elapsed: 1s, ETA:    11sforward fpn
+[>>>                               ] 8/70, 6.2 task/s, elapsed: 1s, ETA:    10sforward fpn
+[>>>>                              ] 9/70, 6.6 task/s, elapsed: 1s, ETA:     9sforward fpn
+[>>>>                             ] 10/70, 6.3 task/s, elapsed: 2s, ETA:    10sforward fpn
+[>>>>>                            ] 11/70, 6.6 task/s, elapsed: 2s, ETA:     9sforward fpn
+[>>>>>                            ] 12/70, 6.9 task/s, elapsed: 2s, ETA:     8sforward fpn
+[>>>>>>                           ] 13/70, 6.6 task/s, elapsed: 2s, ETA:     9sforward fpn
+[>>>>>>                           ] 14/70, 6.8 task/s, elapsed: 2s, ETA:     8sforward fpn
+[>>>>>>>                          ] 15/70, 7.1 task/s, elapsed: 2s, ETA:     8sforward fpn
+[>>>>>>>                          ] 16/70, 6.8 task/s, elapsed: 2s, ETA:     8sforward fpn
+[>>>>>>>>                         ] 17/70, 7.0 task/s, elapsed: 2s, ETA:     8sforward fpn
+[>>>>>>>>                         ] 18/70, 7.2 task/s, elapsed: 2s, ETA:     7sforward fpn
+[>>>>>>>>                         ] 19/70, 7.0 task/s, elapsed: 3s, ETA:     7sforward fpn
+[>>>>>>>>>                        ] 20/70, 7.2 task/s, elapsed: 3s, ETA:     7sforward fpn
+[>>>>>>>>>                        ] 21/70, 7.4 task/s, elapsed: 3s, ETA:     7sforward fpn
+[>>>>>>>>>>                       ] 22/70, 7.1 task/s, elapsed: 3s, ETA:     7sforward fpn
+[>>>>>>>>>>                       ] 23/70, 7.3 task/s, elapsed: 3s, ETA:     6sforward fpn
+[>>>>>>>>>>>                      ] 24/70, 7.4 task/s, elapsed: 3s, ETA:     6sforward fpn
+[>>>>>>>>>>>                      ] 25/70, 7.2 task/s, elapsed: 3s, ETA:     6sforward fpn
+[>>>>>>>>>>>>                     ] 26/70, 7.3 task/s, elapsed: 4s, ETA:     6sforward fpn
+[>>>>>>>>>>>>                     ] 27/70, 7.5 task/s, elapsed: 4s, ETA:     6sforward fpn
+[>>>>>>>>>>>>>                    ] 28/70, 7.3 task/s, elapsed: 4s, ETA:     6sforward fpn
+[>>>>>>>>>>>>>                    ] 29/70, 7.4 task/s, elapsed: 4s, ETA:     6sforward fpn
+[>>>>>>>>>>>>>>                   ] 30/70, 7.6 task/s, elapsed: 4s, ETA:     5sforward fpn
+[>>>>>>>>>>>>>>                   ] 31/70, 7.4 task/s, elapsed: 4s, ETA:     5sforward fpn
+[>>>>>>>>>>>>>>>                  ] 32/70, 7.5 task/s, elapsed: 4s, ETA:     5sforward fpn
+[>>>>>>>>>>>>>>>                  ] 33/70, 7.6 task/s, elapsed: 4s, ETA:     5sforward fpn
+[>>>>>>>>>>>>>>>>                 ] 34/70, 7.5 task/s, elapsed: 5s, ETA:     5sforward fpn
+[>>>>>>>>>>>>>>>>                 ] 35/70, 7.6 task/s, elapsed: 5s, ETA:     5sforward fpn
+[>>>>>>>>>>>>>>>>                 ] 36/70, 7.7 task/s, elapsed: 5s, ETA:     4sforward fpn
+[>>>>>>>>>>>>>>>>>                ] 37/70, 7.5 task/s, elapsed: 5s, ETA:     4sforward fpn
+[>>>>>>>>>>>>>>>>>                ] 38/70, 7.6 task/s, elapsed: 5s, ETA:     4sforward fpn
+[>>>>>>>>>>>>>>>>>>               ] 39/70, 7.7 task/s, elapsed: 5s, ETA:     4sforward fpn
+[>>>>>>>>>>>>>>>>>>               ] 40/70, 7.5 task/s, elapsed: 5s, ETA:     4sforward fpn
+[>>>>>>>>>>>>>>>>>>>              ] 41/70, 7.6 task/s, elapsed: 5s, ETA:     4sforward fpn
+[>>>>>>>>>>>>>>>>>>>              ] 42/70, 7.7 task/s, elapsed: 5s, ETA:     4sforward fpn
+[>>>>>>>>>>>>>>>>>>>>             ] 43/70, 7.5 task/s, elapsed: 6s, ETA:     4sforward fpn
+[>>>>>>>>>>>>>>>>>>>>             ] 44/70, 7.6 task/s, elapsed: 6s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>            ] 45/70, 7.7 task/s, elapsed: 6s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>            ] 46/70, 7.6 task/s, elapsed: 6s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>           ] 47/70, 7.6 task/s, elapsed: 6s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>           ] 48/70, 7.7 task/s, elapsed: 6s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>          ] 49/70, 7.6 task/s, elapsed: 6s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>          ] 50/70, 7.6 task/s, elapsed: 7s, ETA:     3sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>         ] 51/70, 7.7 task/s, elapsed: 7s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>         ] 52/70, 7.6 task/s, elapsed: 7s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>         ] 53/70, 7.7 task/s, elapsed: 7s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>        ] 54/70, 7.7 task/s, elapsed: 7s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>        ] 55/70, 7.6 task/s, elapsed: 7s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>       ] 56/70, 7.7 task/s, elapsed: 7s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>       ] 57/70, 7.7 task/s, elapsed: 7s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 58/70, 7.6 task/s, elapsed: 8s, ETA:     2sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 59/70, 7.7 task/s, elapsed: 8s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>     ] 60/70, 7.8 task/s, elapsed: 8s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>     ] 61/70, 7.7 task/s, elapsed: 8s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    ] 62/70, 7.7 task/s, elapsed: 8s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    ] 63/70, 7.8 task/s, elapsed: 8s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   ] 64/70, 7.7 task/s, elapsed: 8s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   ] 65/70, 7.8 task/s, elapsed: 8s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  ] 66/70, 7.8 task/s, elapsed: 8s, ETA:     1sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  ] 67/70, 7.7 task/s, elapsed: 9s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ] 68/70, 7.8 task/s, elapsed: 9s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ] 69/70, 7.9 task/s, elapsed: 9s, ETA:     0sforward fpn
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 70/70, 7.8 task/s, elapsed: 9s, ETA:     0sLoading and preparing results...
+DONE (t=0.01s)
+creating index...
+index created!
+{'cocoGt': <mmdet.datasets.api_wrappers.coco_api.COCO object at 0x7f9edb9f2290>, 'cocoDt': <pycocotools.coco.COCO object at 0x7f9ee06455d0>, 'evalImgs': defaultdict(<class 'list'>, {}), 'eval': {}, '_gts': defaultdict(<class 'list'>, {}), '_dts': defaultdict(<class 'list'>, {}), 'params': <huicv.evaluation.expand_cocofmt_eval.ExpandParam object at 0x7f9ed902b550>, '_paramsEval': {}, 'stats': [], 'ious': {}, 'use_ignore_attr': False, 'use_iod_for_ignore': False, 'ignore_uncertain': False, 'iod_th_of_iou_f': <function <lambda> at 0x7f9ed92fe170>}
+{'evaluate_standard': 'coco', 'catIds': [0, 1, 2, 3, 4, 5], 'iouThrs': array([0.5 , 0.55, 0.6 , 0.65, 0.7 , 0.75, 0.8 , 0.85, 0.9 , 0.95]), 'recThrs': array([0.  , 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1 ,
+       0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2 , 0.21,
+       0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.3 , 0.31, 0.32,
+       0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39, 0.4 , 0.41, 0.42, 0.43,
+       0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.5 , 0.51, 0.52, 0.53, 0.54,
+       0.55, 0.56, 0.57, 0.58, 0.59, 0.6 , 0.61, 0.62, 0.63, 0.64, 0.65,
+       0.66, 0.67, 0.68, 0.69, 0.7 , 0.71, 0.72, 0.73, 0.74, 0.75, 0.76,
+       0.77, 0.78, 0.79, 0.8 , 0.81, 0.82, 0.83, 0.84, 0.85, 0.86, 0.87,
+       0.88, 0.89, 0.9 , 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98,
+       0.99, 1.  ]), 'maxDets': [100, 300, 1000], 'areaRng': [[0, 10000000000.0], [0, 1024], [1024, 9216], [9216, 10000000000.0]], 'areaRngLbl': ['all', 'small', 'medium', 'large'], 'useCats': 1, 'iouType': 'bbox', 'useSegm': None}
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=0.16s).
+Accumulating evaluation results...
+DONE (t=0.12s).
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1049
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2228
+ Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1977
+ Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.1350
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0686
+ Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0375
+ Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0006
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1036
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.2800
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.2992
+ Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.5589
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.2992
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.2992
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.3011
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.4269
