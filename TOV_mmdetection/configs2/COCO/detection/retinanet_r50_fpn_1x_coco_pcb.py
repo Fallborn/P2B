@@ -1,12 +1,11 @@
 _base_ = [
-    '../_base_/models/retinanet_r50_fpn_padnn.py',
-    '../_base_/datasets/coco_detection.py',
+    '../_base_/models/retinanet_r50_fpn_pcb.py',
     '../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py'
 ]
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.001)  # 8GPU
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.00001)  # 8GPU
 dataset_type = 'CocoFmtDataset'
-data_root = 'data/coco/'
+data_root = 'data/coco_pcb/'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -42,17 +41,17 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file='/home/lxz/P2BNet/TOV_mmdetection_cache/work_dir/coco/coco_1200_latest_pseudo_ann_neu_det.json',
+        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco_pcb/annotations/instances_train.json',
         img_prefix=data_root + 'images' + '/train',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_test.json',
+        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco_pcb/annotations/instances_test.json',
         img_prefix=data_root + 'images' + '/test',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_test.json',
+        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco_pcb/annotations/instances_test.json',
         img_prefix=data_root + 'images' + '/test',
         pipeline=test_pipeline))
 
