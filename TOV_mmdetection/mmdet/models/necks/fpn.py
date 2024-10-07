@@ -166,8 +166,6 @@ class FPN(BaseModule):
     @auto_fp16()
     def forward(self, inputs):
         """Forward function."""
-        print("forward fpn")
-
         assert len(inputs) == len(self.in_channels)
 
         # build laterals

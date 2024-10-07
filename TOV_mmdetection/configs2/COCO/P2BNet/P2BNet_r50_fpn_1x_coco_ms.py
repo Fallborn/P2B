@@ -28,7 +28,7 @@ model = dict(
         start_level=0,
         add_extra_convs='on_input',
         num_outs=4,  # 5
-        norm_cfg=norm_cfg
+        norm_cfg=dict(type='BN', requires_grad=True),
     ),
     roi_head=dict(
         type='P2BHead',
@@ -83,7 +83,7 @@ model = dict(
             base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
             # gen_num_per_box=10,
             iou_thr=0.3,
-            gen_num_neg=3500,
+            gen_num_neg=500,
         ),
         rcnn=None
     ),
@@ -128,6 +128,7 @@ test_pipeline = [
                  keys=['img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes']),
         ])
 ]
+
 data = dict(
     samples_per_gpu=8,  # 2
     workers_per_gpu=1,  # didi-debug 2
@@ -159,19 +160,8 @@ data = dict(
 
 check = dict(stop_while_nan=False)  # add by hui
 
-#4和0.1目前最好
 # optimizer
-# optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.005)
-optimizer = dict(
-    type='AdamW',
-    lr=5e-05,
-    betas=(0.9, 0.999),
-    weight_decay=0.05,
-    paramwise_cfg=dict(
-        custom_keys=dict(
-            absolute_pos_embed=dict(decay_mult=0.0),
-            relative_position_bias_table=dict(decay_mult=0.0),
-            norm=dict(decay_mult=0.0))))
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -180,14 +170,12 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.001,
     step=[8, 11])
-runner = dict(type='EpochBasedRunner', max_epochs=24)
+runner = dict(type='EpochBasedRunner', max_epochs=12)
 work_dir = '../'
 
 evaluation = dict(
-    interval=2, metric='bbox',
+    interval=3, metric='bbox',
     save_result_file=work_dir + '_' + str(test_scale) + '_latest_result.json',
     do_first_eval=False,  # test
     do_final_eval=True,
 )
-
-

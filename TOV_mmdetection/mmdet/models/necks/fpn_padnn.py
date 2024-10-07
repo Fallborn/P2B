@@ -203,6 +203,12 @@ class FPNPADNN(BaseModule):
         #     self.fpn_convs[i](laterals[i]) for i in range(min(used_backbone_levels, self.num_outs))  # change by hui
         # ]
 
+        # outs = []
+        # layer_coeeficient = 1
+        # for i in range(min(used_backbone_levels, self.num_outs)):
+        #     outs.append(self.fpn_convs[i](laterals[i]) + layer_coeeficient * self.fpn_convs[i](self.mda(laterals[i])))
+        #     layer_coeeficient = 0.1 * layer_coeeficient
+
         outs = [
             self.fpn_convs[i](laterals[i]) + self.fpn_convs[i](self.mda(laterals[i])) # 修改该行以在每一层 fpn_conv 后应用 CBAM
             for i in range(min(used_backbone_levels, self.num_outs))

@@ -4,7 +4,7 @@ _base_ = [
     '../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py'
 ]
 # optimizer
-optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.00001)  # 8GPU
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 dataset_type = 'CocoFmtDataset'
 data_root = 'data/coco/'
 
@@ -38,7 +38,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=16,
+    samples_per_gpu=8,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,

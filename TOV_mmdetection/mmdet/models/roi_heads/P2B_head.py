@@ -208,10 +208,13 @@ class P2BHead(StandardRoIHead):
         # TODO: a more flexible way to decide which feature maps to use
 
         bbox_feats = self.bbox_roi_extractor(
-            x[:self.bbox_roi_extractor.num_inputs], rois)
+            [i + 1e-6 for i in x[:self.bbox_roi_extractor.num_inputs]],
+            rois)
 
         if self.with_shared_head:
             bbox_feats = self.shared_head(bbox_feats)
+
+        # bbox_feats = [i+1e-6 for i in bbox_feats]
 
         cls_score, ins_score, reg_box = self.bbox_head(bbox_feats, stage)
 
@@ -637,4 +640,3 @@ class P2BHead(StandardRoIHead):
             rois, cls_score, bbox_pred, img_shapes, cfg=rcnn_test_cfg)
 
         return det_bboxes, det_labels
-

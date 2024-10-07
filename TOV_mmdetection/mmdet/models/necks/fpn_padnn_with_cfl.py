@@ -95,7 +95,7 @@ class FPNPADNNCFL(BaseModule):
         # self.cbam = CBAM(out_channels)
         self.offsets = nn.Conv2d(out_channels,2*3*3, kernel_size=3, stride=1, padding=1)
         self.dcn = DeformConv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, deformable_groups=1)
-        self.mda = MDA(out_channels,cfl = False, dff = False)
+        self.mda = MDA(out_channels,cfl = True, dff = False)
         self.ca = ChannelAttention(out_channels)
         self.sa = SpatialAttention()
 
