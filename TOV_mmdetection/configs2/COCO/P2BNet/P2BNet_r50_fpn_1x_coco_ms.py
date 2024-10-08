@@ -161,7 +161,7 @@ data = dict(
 check = dict(stop_while_nan=False)  # add by hui
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -174,7 +174,7 @@ runner = dict(type='EpochBasedRunner', max_epochs=12)
 work_dir = '../'
 
 evaluation = dict(
-    interval=3, metric='bbox',
+    interval=1, metric='bbox',
     save_result_file=work_dir + '_' + str(test_scale) + '_latest_result.json',
     do_first_eval=False,  # test
     do_final_eval=True,

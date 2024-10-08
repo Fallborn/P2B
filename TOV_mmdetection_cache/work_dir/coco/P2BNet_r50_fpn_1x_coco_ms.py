@@ -233,7 +233,7 @@ data = dict(
         ],
         test_mode=False))
 check = dict(stop_while_nan=False)
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
@@ -244,7 +244,7 @@ lr_config = dict(
 runner = dict(type='EpochBasedRunner', max_epochs=18)
 work_dir = '../TOV_mmdetection_cache/work_dir/coco/'
 evaluation = dict(
-    interval=3,
+    interval=1,
     metric='bbox',
     save_result_file=
     '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result.json',
