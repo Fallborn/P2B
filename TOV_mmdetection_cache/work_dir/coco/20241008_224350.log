@@ -1,0 +1,1155 @@
+2024-10-08 22:43:50,628 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.7.16 (default, Jan 17 2023, 22:20:44) [GCC 11.2.0]
+CUDA available: True
+GPU 0,1,2,3,4,5,6,7: NVIDIA GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda-12.0
+NVCC: Build cuda_12.0.r12.0/compiler.31968024_0
+GCC: gcc (Ubuntu 11.4.0-2ubuntu1~18.04) 11.4.0
+PyTorch: 1.7.0
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.4-Product Build 20210904 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.6.0 (Git Hash 5ef631a030a6f73131c77892041042805a06064f)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.0
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.0.3
+  - Magma 2.5.2
+  - Build settings: BLAS=MKL, BUILD_TYPE=Release, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DUSE_VULKAN_WRAPPER -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, USE_CUDA=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.8.0
+OpenCV: 4.8.1
+MMCV: 1.3.3
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.0
+MMDetection: 2.13.0+e1fb402
+------------------------------------------------------------
+
+2024-10-08 22:43:51,680 - mmdet - INFO - Distributed training: False
+2024-10-08 22:43:52,476 - mmdet - INFO - Config:
+checkpoint_config = dict(interval=1)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '../TOV_mmdetection_cache/work_dir/coco/pre_trained/P2B.pth'
+resume_from = None
+workflow = [('train', 1)]
+norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
+debug = False
+num_stages = 2
+model = dict(
+    type='P2BNet',
+    pretrained='torchvision://resnet50',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch'),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=0,
+        add_extra_convs='on_input',
+        num_outs=4,
+        norm_cfg=dict(type='GN', num_groups=32, requires_grad=True)),
+    roi_head=dict(
+        type='P2BHead',
+        num_stages=2,
+        top_k=7,
+        with_atten=False,
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=dict(
+            type='Shared2FCInstanceMILHead',
+            num_stages=2,
+            with_loss_pseudo=False,
+            in_channels=256,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=6,
+            num_ref_fcs=0,
+            bbox_coder=dict(
+                type='DeltaXYWHBBoxCoder',
+                target_means=[0.0, 0.0, 0.0, 0.0],
+                target_stds=[0.1, 0.1, 0.2, 0.2]),
+            reg_class_agnostic=True,
+            loss_type='MIL',
+            loss_mil1=dict(
+                type='MILLoss',
+                binary_ins=False,
+                loss_weight=0.25,
+                loss_type='binary_cross_entropy'),
+            loss_mil2=dict(
+                type='MILLoss',
+                binary_ins=False,
+                loss_weight=0.25,
+                loss_type='gfocal_loss'))),
+    train_cfg=dict(
+        base_proposal=dict(
+            base_scales=[4, 8, 16, 32, 64, 128],
+            base_ratios=[
+                0.3333333333333333, 0.5, 0.6666666666666666, 1.0, 1.5, 2.0, 3.0
+            ],
+            shake_ratio=None,
+            cut_mode='symmetry',
+            gen_num_neg=0),
+        fine_proposal=dict(
+            gen_proposal_mode='fix_gen',
+            cut_mode=None,
+            shake_ratio=[0.1],
+            base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
+            iou_thr=0.3,
+            gen_num_neg=500),
+        rcnn=None),
+    test_cfg=dict(rpn=None, rcnn=None))
+dataset_type = 'CocoFmtDataset'
+data_root = 'data/coco/'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='Resize',
+        img_scale=[(2000, 480), (2000, 576), (2000, 688), (2000, 864),
+                   (2000, 1000), (2000, 1200)],
+        multiscale_mode='value',
+        keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(
+        type='Collect',
+        keys=[
+            'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+            'gt_true_bboxes'
+        ])
+]
+test_scale = 1200
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(2000, 1200),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=[
+                    'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+                    'gt_anns_id', 'gt_true_bboxes'
+                ])
+        ])
+]
+data = dict(
+    samples_per_gpu=4,
+    workers_per_gpu=1,
+    shuffle=None,
+    train=dict(
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations_qc_pt/instances_train2017_coarse.json',
+        img_prefix='data/coco/images/train/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='Resize',
+                img_scale=[(2000, 480), (2000, 576), (2000, 688), (2000, 864),
+                           (2000, 1000), (2000, 1200)],
+                multiscale_mode='value',
+                keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=[
+                    'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+                    'gt_true_bboxes'
+                ])
+        ]),
+    val=dict(
+        samples_per_gpu=2,
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations_qc_pt/instances_train2017_coarse.json',
+        img_prefix='data/coco/images/train/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(2000, 1200),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(
+                        type='Collect',
+                        keys=[
+                            'img', 'gt_bboxes', 'gt_labels',
+                            'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes'
+                        ])
+                ])
+        ],
+        test_mode=False),
+    test=dict(
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations/instances_val2017.json',
+        img_prefix='data/coco/images/val/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(2000, 1200),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(
+                        type='Collect',
+                        keys=[
+                            'img', 'gt_bboxes', 'gt_labels',
+                            'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes'
+                        ])
+                ])
+        ]))
+check = dict(stop_while_nan=False)
+optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.001)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=18)
+work_dir = '../TOV_mmdetection_cache/work_dir/coco/'
+evaluation = dict(
+    interval=1,
+    metric='bbox',
+    save_result_file=
+    '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result.json',
+    do_first_eval=False,
+    do_final_eval=True)
+gpu_ids = [0]
+
+2024-10-08 22:43:55,332 - mmdet - INFO - load checkpoint from ../TOV_mmdetection_cache/work_dir/coco/pre_trained/P2B.pth
+2024-10-08 22:43:55,332 - mmdet - INFO - Use load_from_local loader
+2024-10-08 22:43:55,599 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for roi_head.bbox_head.fc_cls.0.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([7, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.0.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([7]).
+size mismatch for roi_head.bbox_head.fc_cls.1.weight: copying a param with shape torch.Size([80, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.1.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([6]).
+size mismatch for roi_head.bbox_head.fc_ins.0.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([7, 1024]).
+size mismatch for roi_head.bbox_head.fc_ins.0.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([7]).
+size mismatch for roi_head.bbox_head.fc_ins.1.weight: copying a param with shape torch.Size([80, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_ins.1.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([6]).
+2024-10-08 22:43:55,605 - mmdet - INFO - Start running, host: lxz@user-SYS-4029GP-TRT2, work_dir: /home/lxz/P2BNet/TOV_mmdetection_cache/work_dir/coco
+2024-10-08 22:43:55,605 - mmdet - INFO - workflow: [('train', 1)], max: 18 epochs
+2024-10-08 22:44:27,241 - mmdet - INFO - Epoch [1][50/360]	lr: 9.890e-03, eta: 1:07:47, time: 0.633, data_time: 0.057, memory: 8604, stage0_loss_instance_mil: 0.6286, stage0_bag_acc: 37.2039, stage0_mean_ious: 0.4195, stage0_s: 0.0000, stage0_m: 0.0220, stage0_l: 0.2094, stage0_h: 0.4422, stage1_loss_instance_mil: 0.2638, stage1_bag_acc: 24.5630, stage1_neg_loss: 0.0406, stage1_mean_ious: 0.4109, stage1_s: 0.0000, stage1_m: 0.0191, stage1_l: 0.2128, stage1_h: 0.4287, loss: 0.9329, grad_norm: 6.0398
+2024-10-08 22:44:56,273 - mmdet - INFO - Epoch [1][100/360]	lr: 1.988e-02, eta: 1:04:30, time: 0.581, data_time: 0.011, memory: 8607, stage0_loss_instance_mil: 0.6423, stage0_bag_acc: 30.1512, stage0_mean_ious: 0.3643, stage0_s: 0.0000, stage0_m: 0.0363, stage0_l: 0.1947, stage0_h: 0.3776, stage1_loss_instance_mil: 0.2226, stage1_bag_acc: 31.1153, stage1_neg_loss: 0.1296, stage1_mean_ious: 0.3628, stage1_s: 0.0000, stage1_m: 0.0427, stage1_l: 0.1937, stage1_h: 0.3755, loss: 0.9944, grad_norm: 8.6392
+2024-10-08 22:45:27,456 - mmdet - INFO - Epoch [1][150/360]	lr: 2.987e-02, eta: 1:04:35, time: 0.624, data_time: 0.013, memory: 8612, stage0_loss_instance_mil: 0.6863, stage0_bag_acc: 21.6622, stage0_mean_ious: 0.3075, stage0_s: 0.0109, stage0_m: 0.0127, stage0_l: 0.1588, stage0_h: 0.3085, stage1_loss_instance_mil: 0.1917, stage1_bag_acc: 20.6590, stage1_neg_loss: 0.0186, stage1_mean_ious: 0.3003, stage1_s: 0.0111, stage1_m: 0.0124, stage1_l: 0.1609, stage1_h: 0.2996, loss: 0.8966, grad_norm: 1.8394
+2024-10-08 22:45:57,830 - mmdet - INFO - Epoch [1][200/360]	lr: 3.986e-02, eta: 1:03:57, time: 0.607, data_time: 0.012, memory: 8652, stage0_loss_instance_mil: 0.7003, stage0_bag_acc: 16.8376, stage0_mean_ious: 0.3884, stage0_s: 0.0000, stage0_m: 0.0445, stage0_l: 0.1539, stage0_h: 0.4027, stage1_loss_instance_mil: 0.1469, stage1_bag_acc: 22.6967, stage1_neg_loss: 0.0069, stage1_mean_ious: 0.3752, stage1_s: 0.0000, stage1_m: 0.0407, stage1_l: 0.1545, stage1_h: 0.3871, loss: 0.8542, grad_norm: 0.9068
+2024-10-08 22:46:27,505 - mmdet - INFO - Epoch [1][250/360]	lr: 4.985e-02, eta: 1:03:05, time: 0.593, data_time: 0.012, memory: 8652, stage0_loss_instance_mil: 0.7027, stage0_bag_acc: 14.7831, stage0_mean_ious: 0.2804, stage0_s: 0.0000, stage0_m: 0.0208, stage0_l: 0.1474, stage0_h: 0.3002, stage1_loss_instance_mil: 0.1448, stage1_bag_acc: 16.3212, stage1_neg_loss: 0.0033, stage1_mean_ious: 0.2780, stage1_s: 0.0000, stage1_m: 0.0207, stage1_l: 0.1400, stage1_h: 0.3002, loss: 0.8508, grad_norm: 0.4952
+2024-10-08 22:46:56,265 - mmdet - INFO - Epoch [1][300/360]	lr: 5.984e-02, eta: 1:02:01, time: 0.575, data_time: 0.012, memory: 8652, stage0_loss_instance_mil: 0.6867, stage0_bag_acc: 17.5830, stage0_mean_ious: 0.3596, stage0_s: 0.0000, stage0_m: 0.0317, stage0_l: 0.1620, stage0_h: 0.3578, stage1_loss_instance_mil: 0.1308, stage1_bag_acc: 16.7442, stage1_neg_loss: 0.0083, stage1_mean_ious: 0.3449, stage1_s: 0.0000, stage1_m: 0.0352, stage1_l: 0.1637, stage1_h: 0.3420, loss: 0.8259, grad_norm: 0.4270
+2024-10-08 22:47:25,247 - mmdet - INFO - Epoch [1][350/360]	lr: 6.983e-02, eta: 1:01:11, time: 0.580, data_time: 0.012, memory: 8652, stage0_loss_instance_mil: 0.6942, stage0_bag_acc: 14.9236, stage0_mean_ious: 0.3289, stage0_s: 0.0000, stage0_m: 0.0073, stage0_l: 0.1650, stage0_h: 0.3396, stage1_loss_instance_mil: 0.1249, stage1_bag_acc: 16.7761, stage1_neg_loss: 0.0090, stage1_mean_ious: 0.3229, stage1_s: 0.0000, stage1_m: 0.0081, stage1_l: 0.1651, stage1_h: 0.3331, loss: 0.8281, grad_norm: 0.3465
+2024-10-08 22:47:31,215 - mmdet - INFO - Saving checkpoint at 1 epochs
+2024-10-08 22:49:10,484 - mmdet - INFO - Evaluating bbox...
+2024-10-08 22:49:11,231 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0042
+2024-10-08 22:49:11,231 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.0116
+2024-10-08 22:49:11,231 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0078
+2024-10-08 22:49:11,231 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0038
+2024-10-08 22:49:11,231 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0020
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0020
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0152
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0041
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0000
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0053
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.0164
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.0053
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.0053
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0509
+2024-10-08 22:49:11,232 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0112
+2024-10-08 22:49:11,233 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0000
+2024-10-08 22:49:11,243 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 22:49:11,244 - mmdet - INFO - Epoch(val) [1][360]	eval_iter_num: 720, bbox_mAP: 0.0040, bbox_mAP_50: 0.0120, bbox_mAP_75: 0.0080, bbox_mAP_s: 0.0040, bbox_mAP_m: 0.0020, bbox_mAP_l: 0.0020, bbox_mAP_copypaste: 0.004 0.012 0.008 0.004 0.002 0.002
+2024-10-08 22:49:42,711 - mmdet - INFO - Epoch [2][50/360]	lr: 8.182e-02, eta: 0:59:29, time: 0.629, data_time: 0.059, memory: 8652, stage0_loss_instance_mil: 0.6884, stage0_bag_acc: 20.9132, stage0_mean_ious: 0.3670, stage0_s: 0.0000, stage0_m: 0.0156, stage0_l: 0.1562, stage0_h: 0.3749, stage1_loss_instance_mil: 0.1200, stage1_bag_acc: 19.4013, stage1_neg_loss: 0.0130, stage1_mean_ious: 0.3466, stage1_s: 0.0000, stage1_m: 0.0183, stage1_l: 0.1504, stage1_h: 0.3527, loss: 0.8214, grad_norm: 0.3899
+2024-10-08 22:50:11,735 - mmdet - INFO - Epoch [2][100/360]	lr: 9.181e-02, eta: 0:58:54, time: 0.580, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.6717, stage0_bag_acc: 21.7815, stage0_mean_ious: 0.3497, stage0_s: 0.0000, stage0_m: 0.0051, stage0_l: 0.1638, stage0_h: 0.3655, stage1_loss_instance_mil: 0.1180, stage1_bag_acc: 24.2959, stage1_neg_loss: 0.0164, stage1_mean_ious: 0.3394, stage1_s: 0.0000, stage1_m: 0.0066, stage1_l: 0.1595, stage1_h: 0.3538, loss: 0.8061, grad_norm: 0.3202
+2024-10-08 22:50:40,785 - mmdet - INFO - Epoch [2][150/360]	lr: 1.000e-01, eta: 0:58:21, time: 0.581, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6947, stage0_bag_acc: 15.3823, stage0_mean_ious: 0.3469, stage0_s: 0.0000, stage0_m: 0.0174, stage0_l: 0.1606, stage0_h: 0.3569, stage1_loss_instance_mil: 0.1138, stage1_bag_acc: 19.3716, stage1_neg_loss: 0.0122, stage1_mean_ious: 0.3366, stage1_s: 0.0000, stage1_m: 0.0159, stage1_l: 0.1579, stage1_h: 0.3474, loss: 0.8207, grad_norm: 0.3088
+2024-10-08 22:51:10,295 - mmdet - INFO - Epoch [2][200/360]	lr: 1.000e-01, eta: 0:57:54, time: 0.590, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6830, stage0_bag_acc: 17.1969, stage0_mean_ious: 0.4176, stage0_s: 0.0000, stage0_m: 0.0600, stage0_l: 0.2101, stage0_h: 0.4352, stage1_loss_instance_mil: 0.1074, stage1_bag_acc: 40.0969, stage1_neg_loss: 0.0181, stage1_mean_ious: 0.3839, stage1_s: 0.0000, stage1_m: 0.0633, stage1_l: 0.1942, stage1_h: 0.3981, loss: 0.8085, grad_norm: 0.2951
+2024-10-08 22:51:41,324 - mmdet - INFO - Epoch [2][250/360]	lr: 1.000e-01, eta: 0:57:41, time: 0.621, data_time: 0.015, memory: 8677, stage0_loss_instance_mil: 0.6731, stage0_bag_acc: 19.8802, stage0_mean_ious: 0.2478, stage0_s: 0.0000, stage0_m: 0.0186, stage0_l: 0.1233, stage0_h: 0.2513, stage1_loss_instance_mil: 0.1247, stage1_bag_acc: 21.0029, stage1_neg_loss: 0.0210, stage1_mean_ious: 0.2388, stage1_s: 0.0000, stage1_m: 0.0178, stage1_l: 0.1341, stage1_h: 0.2387, loss: 0.8188, grad_norm: 0.3312
+2024-10-08 22:52:11,838 - mmdet - INFO - Epoch [2][300/360]	lr: 1.000e-01, eta: 0:57:20, time: 0.610, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.6860, stage0_bag_acc: 20.2408, stage0_mean_ious: 0.2428, stage0_s: 0.0000, stage0_m: 0.0470, stage0_l: 0.1674, stage0_h: 0.2344, stage1_loss_instance_mil: 0.1090, stage1_bag_acc: 23.6158, stage1_neg_loss: 0.0180, stage1_mean_ious: 0.2307, stage1_s: 0.0000, stage1_m: 0.0422, stage1_l: 0.1710, stage1_h: 0.2204, loss: 0.8129, grad_norm: 0.2751
+2024-10-08 22:52:43,453 - mmdet - INFO - Epoch [2][350/360]	lr: 1.000e-01, eta: 0:57:08, time: 0.632, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.6809, stage0_bag_acc: 20.2216, stage0_mean_ious: 0.3067, stage0_s: 0.0000, stage0_m: 0.0115, stage0_l: 0.1634, stage0_h: 0.3098, stage1_loss_instance_mil: 0.1072, stage1_bag_acc: 30.9472, stage1_neg_loss: 0.0199, stage1_mean_ious: 0.2864, stage1_s: 0.0000, stage1_m: 0.0084, stage1_l: 0.1439, stage1_h: 0.2909, loss: 0.8081, grad_norm: 0.2837
+2024-10-08 22:52:49,101 - mmdet - INFO - Saving checkpoint at 2 epochs
+2024-10-08 22:54:25,129 - mmdet - INFO - Evaluating bbox...
+2024-10-08 22:54:25,879 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0294
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.1013
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0490
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0228
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0114
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0030
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0190
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0802
+2024-10-08 22:54:25,880 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0888
+2024-10-08 22:54:25,881 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0815
+2024-10-08 22:54:25,881 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.2090
+2024-10-08 22:54:25,881 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.0815
+2024-10-08 22:54:25,881 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.0815
+2024-10-08 22:54:25,881 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0848
+2024-10-08 22:54:25,881 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0785
+2024-10-08 22:54:25,881 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0878
+2024-10-08 22:54:25,890 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 22:54:25,891 - mmdet - INFO - Epoch(val) [2][360]	eval_iter_num: 720, bbox_mAP: 0.0290, bbox_mAP_50: 0.1010, bbox_mAP_75: 0.0490, bbox_mAP_s: 0.0230, bbox_mAP_m: 0.0110, bbox_mAP_l: 0.0030, bbox_mAP_copypaste: 0.029 0.101 0.049 0.023 0.011 0.003
+2024-10-08 22:54:58,539 - mmdet - INFO - Epoch [3][50/360]	lr: 1.000e-01, eta: 0:56:10, time: 0.653, data_time: 0.058, memory: 8677, stage0_loss_instance_mil: 0.6829, stage0_bag_acc: 16.1526, stage0_mean_ious: 0.1936, stage0_s: 0.0000, stage0_m: 0.0236, stage0_l: 0.1843, stage0_h: 0.1797, stage1_loss_instance_mil: 0.1068, stage1_bag_acc: 27.7962, stage1_neg_loss: 0.0175, stage1_mean_ious: 0.1765, stage1_s: 0.0000, stage1_m: 0.0200, stage1_l: 0.1628, stage1_h: 0.1638, loss: 0.8072, grad_norm: 0.2692
+2024-10-08 22:55:27,817 - mmdet - INFO - Epoch [3][100/360]	lr: 1.000e-01, eta: 0:55:39, time: 0.586, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6803, stage0_bag_acc: 21.0589, stage0_mean_ious: 0.2861, stage0_s: 0.0000, stage0_m: 0.0331, stage0_l: 0.2527, stage0_h: 0.2798, stage1_loss_instance_mil: 0.1094, stage1_bag_acc: 17.1531, stage1_neg_loss: 0.0184, stage1_mean_ious: 0.2710, stage1_s: 0.0000, stage1_m: 0.0283, stage1_l: 0.2388, stage1_h: 0.2677, loss: 0.8081, grad_norm: 0.2596
+2024-10-08 22:55:58,353 - mmdet - INFO - Epoch [3][150/360]	lr: 1.000e-01, eta: 0:55:16, time: 0.611, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6762, stage0_bag_acc: 18.2885, stage0_mean_ious: 0.2138, stage0_s: 0.0000, stage0_m: 0.0536, stage0_l: 0.1660, stage0_h: 0.1970, stage1_loss_instance_mil: 0.1034, stage1_bag_acc: 28.3581, stage1_neg_loss: 0.0174, stage1_mean_ious: 0.1982, stage1_s: 0.0000, stage1_m: 0.0486, stage1_l: 0.1528, stage1_h: 0.1837, loss: 0.7970, grad_norm: 0.2855
+2024-10-08 22:56:26,563 - mmdet - INFO - Epoch [3][200/360]	lr: 1.000e-01, eta: 0:54:38, time: 0.564, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.6795, stage0_bag_acc: 25.2070, stage0_mean_ious: 0.3058, stage0_s: 0.0000, stage0_m: 0.0429, stage0_l: 0.1531, stage0_h: 0.3108, stage1_loss_instance_mil: 0.1108, stage1_bag_acc: 26.5115, stage1_neg_loss: 0.0267, stage1_mean_ious: 0.2884, stage1_s: 0.0000, stage1_m: 0.0382, stage1_l: 0.1430, stage1_h: 0.2944, loss: 0.8171, grad_norm: 0.3536
+2024-10-08 22:56:56,306 - mmdet - INFO - Epoch [3][250/360]	lr: 1.000e-01, eta: 0:54:10, time: 0.595, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6771, stage0_bag_acc: 21.2662, stage0_mean_ious: 0.1104, stage0_s: 0.0000, stage0_m: 0.0411, stage0_l: 0.1811, stage0_h: 0.0839, stage1_loss_instance_mil: 0.1010, stage1_bag_acc: 19.0666, stage1_neg_loss: 0.0166, stage1_mean_ious: 0.1070, stage1_s: 0.0000, stage1_m: 0.0384, stage1_l: 0.1807, stage1_h: 0.0827, loss: 0.7947, grad_norm: 0.2759
+2024-10-08 22:57:25,975 - mmdet - INFO - Epoch [3][300/360]	lr: 1.000e-01, eta: 0:53:41, time: 0.593, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6826, stage0_bag_acc: 21.7209, stage0_mean_ious: 0.2124, stage0_s: 0.0000, stage0_m: 0.0139, stage0_l: 0.1852, stage0_h: 0.1980, stage1_loss_instance_mil: 0.1004, stage1_bag_acc: 20.9981, stage1_neg_loss: 0.0221, stage1_mean_ious: 0.1921, stage1_s: 0.0000, stage1_m: 0.0127, stage1_l: 0.1704, stage1_h: 0.1781, loss: 0.8050, grad_norm: 0.2905
+2024-10-08 22:57:56,377 - mmdet - INFO - Epoch [3][350/360]	lr: 1.000e-01, eta: 0:53:16, time: 0.608, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6619, stage0_bag_acc: 28.8804, stage0_mean_ious: 0.2081, stage0_s: 0.0000, stage0_m: 0.0098, stage0_l: 0.1636, stage0_h: 0.1951, stage1_loss_instance_mil: 0.1076, stage1_bag_acc: 29.9574, stage1_neg_loss: 0.0184, stage1_mean_ious: 0.2028, stage1_s: 0.0000, stage1_m: 0.0081, stage1_l: 0.1518, stage1_h: 0.1916, loss: 0.7880, grad_norm: 0.4195
+2024-10-08 22:58:02,740 - mmdet - INFO - Saving checkpoint at 3 epochs
+2024-10-08 22:59:43,976 - mmdet - INFO - Evaluating bbox...
+2024-10-08 22:59:44,803 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0259
+2024-10-08 22:59:44,803 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.1122
+2024-10-08 22:59:44,803 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0395
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0127
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0044
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0011
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0051
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0873
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0950
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0847
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.2442
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.0847
+2024-10-08 22:59:44,804 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.0847
+2024-10-08 22:59:44,805 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0600
+2024-10-08 22:59:44,805 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0865
+2024-10-08 22:59:44,805 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0938
+2024-10-08 22:59:44,822 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 22:59:44,823 - mmdet - INFO - Epoch(val) [3][360]	eval_iter_num: 720, bbox_mAP: 0.0260, bbox_mAP_50: 0.1120, bbox_mAP_75: 0.0390, bbox_mAP_s: 0.0130, bbox_mAP_m: 0.0040, bbox_mAP_l: 0.0010, bbox_mAP_copypaste: 0.026 0.112 0.039 0.013 0.004 0.001
+2024-10-08 23:00:19,300 - mmdet - INFO - Epoch [4][50/360]	lr: 1.000e-01, eta: 0:52:36, time: 0.689, data_time: 0.058, memory: 8677, stage0_loss_instance_mil: 0.6865, stage0_bag_acc: 19.5997, stage0_mean_ious: 0.1591, stage0_s: 0.0000, stage0_m: 0.0294, stage0_l: 0.1517, stage0_h: 0.1466, stage1_loss_instance_mil: 0.0986, stage1_bag_acc: 27.1764, stage1_neg_loss: 0.0187, stage1_mean_ious: 0.1554, stage1_s: 0.0000, stage1_m: 0.0320, stage1_l: 0.1519, stage1_h: 0.1418, loss: 0.8038, grad_norm: 0.3506
+2024-10-08 23:00:51,050 - mmdet - INFO - Epoch [4][100/360]	lr: 1.000e-01, eta: 0:52:17, time: 0.635, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6722, stage0_bag_acc: 17.5429, stage0_mean_ious: 0.1978, stage0_s: 0.0000, stage0_m: 0.0137, stage0_l: 0.1562, stage0_h: 0.1912, stage1_loss_instance_mil: 0.1008, stage1_bag_acc: 23.4891, stage1_neg_loss: 0.0219, stage1_mean_ious: 0.1928, stage1_s: 0.0000, stage1_m: 0.0138, stage1_l: 0.1508, stage1_h: 0.1857, loss: 0.7949, grad_norm: 0.4093
+2024-10-08 23:01:20,287 - mmdet - INFO - Epoch [4][150/360]	lr: 1.000e-01, eta: 0:51:46, time: 0.585, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6707, stage0_bag_acc: 22.4011, stage0_mean_ious: 0.3268, stage0_s: 0.0000, stage0_m: 0.0149, stage0_l: 0.1553, stage0_h: 0.3360, stage1_loss_instance_mil: 0.1040, stage1_bag_acc: 37.2119, stage1_neg_loss: 0.0206, stage1_mean_ious: 0.3093, stage1_s: 0.0000, stage1_m: 0.0144, stage1_l: 0.1406, stage1_h: 0.3202, loss: 0.7953, grad_norm: 0.4335
+2024-10-08 23:01:49,611 - mmdet - INFO - Epoch [4][200/360]	lr: 1.000e-01, eta: 0:51:15, time: 0.586, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6518, stage0_bag_acc: 29.5850, stage0_mean_ious: 0.2941, stage0_s: 0.0000, stage0_m: 0.0187, stage0_l: 0.1599, stage0_h: 0.2926, stage1_loss_instance_mil: 0.1207, stage1_bag_acc: 36.8370, stage1_neg_loss: 0.0311, stage1_mean_ious: 0.2786, stage1_s: 0.0000, stage1_m: 0.0150, stage1_l: 0.1592, stage1_h: 0.2769, loss: 0.8035, grad_norm: 0.5049
+2024-10-08 23:02:20,424 - mmdet - INFO - Epoch [4][250/360]	lr: 1.000e-01, eta: 0:50:50, time: 0.616, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6371, stage0_bag_acc: 30.6266, stage0_mean_ious: 0.3322, stage0_s: 0.0000, stage0_m: 0.0490, stage0_l: 0.1897, stage0_h: 0.3381, stage1_loss_instance_mil: 0.1371, stage1_bag_acc: 46.2022, stage1_neg_loss: 0.0319, stage1_mean_ious: 0.3174, stage1_s: 0.0000, stage1_m: 0.0530, stage1_l: 0.1874, stage1_h: 0.3192, loss: 0.8061, grad_norm: 0.6093
+2024-10-08 23:02:51,611 - mmdet - INFO - Epoch [4][300/360]	lr: 1.000e-01, eta: 0:50:27, time: 0.624, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6164, stage0_bag_acc: 33.1600, stage0_mean_ious: 0.3360, stage0_s: 0.0000, stage0_m: 0.0089, stage0_l: 0.1304, stage0_h: 0.3462, stage1_loss_instance_mil: 0.1302, stage1_bag_acc: 44.1196, stage1_neg_loss: 0.0249, stage1_mean_ious: 0.3203, stage1_s: 0.0000, stage1_m: 0.0080, stage1_l: 0.1246, stage1_h: 0.3302, loss: 0.7715, grad_norm: 0.5505
+2024-10-08 23:03:22,769 - mmdet - INFO - Epoch [4][350/360]	lr: 1.000e-01, eta: 0:50:02, time: 0.623, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.5805, stage0_bag_acc: 44.5228, stage0_mean_ious: 0.3911, stage0_s: 0.0000, stage0_m: 0.0316, stage0_l: 0.1618, stage0_h: 0.4027, stage1_loss_instance_mil: 0.1756, stage1_bag_acc: 44.1020, stage1_neg_loss: 0.0360, stage1_mean_ious: 0.3739, stage1_s: 0.0000, stage1_m: 0.0310, stage1_l: 0.1620, stage1_h: 0.3833, loss: 0.7921, grad_norm: 0.7077
+2024-10-08 23:03:28,669 - mmdet - INFO - Saving checkpoint at 4 epochs
+2024-10-08 23:05:06,768 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:05:07,538 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0003
+2024-10-08 23:05:07,538 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.0015
+2024-10-08 23:05:07,538 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0003
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0014
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0008
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0000
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0041
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.0154
+2024-10-08 23:05:07,539 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.0041
+2024-10-08 23:05:07,540 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.0041
+2024-10-08 23:05:07,540 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0084
+2024-10-08 23:05:07,540 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0052
+2024-10-08 23:05:07,540 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0004
+2024-10-08 23:05:07,554 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:05:07,554 - mmdet - INFO - Epoch(val) [4][360]	eval_iter_num: 720, bbox_mAP: 0.0000, bbox_mAP_50: 0.0010, bbox_mAP_75: 0.0000, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0000, bbox_mAP_copypaste: 0.000 0.001 0.000 0.000 0.000 0.000
+2024-10-08 23:05:41,041 - mmdet - INFO - Epoch [5][50/360]	lr: 1.000e-01, eta: 0:49:19, time: 0.670, data_time: 0.060, memory: 8677, stage0_loss_instance_mil: 0.5819, stage0_bag_acc: 37.4276, stage0_mean_ious: 0.4291, stage0_s: 0.0000, stage0_m: 0.0609, stage0_l: 0.1886, stage0_h: 0.4440, stage1_loss_instance_mil: 0.1516, stage1_bag_acc: 46.2496, stage1_neg_loss: 0.0315, stage1_mean_ious: 0.3984, stage1_s: 0.0000, stage1_m: 0.0472, stage1_l: 0.1738, stage1_h: 0.4130, loss: 0.7650, grad_norm: 0.7813
+2024-10-08 23:06:11,186 - mmdet - INFO - Epoch [5][100/360]	lr: 1.000e-01, eta: 0:48:51, time: 0.603, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6262, stage0_bag_acc: 35.8031, stage0_mean_ious: 0.3773, stage0_s: 0.0000, stage0_m: 0.0197, stage0_l: 0.2038, stage0_h: 0.3882, stage1_loss_instance_mil: 0.1703, stage1_bag_acc: 29.2342, stage1_neg_loss: 0.0384, stage1_mean_ious: 0.3620, stage1_s: 0.0000, stage1_m: 0.0201, stage1_l: 0.2085, stage1_h: 0.3699, loss: 0.8349, grad_norm: 0.8675
+2024-10-08 23:06:41,437 - mmdet - INFO - Epoch [5][150/360]	lr: 1.000e-01, eta: 0:48:23, time: 0.605, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.7497, stage0_bag_acc: 21.5552, stage0_mean_ious: 0.2149, stage0_s: 0.0000, stage0_m: 0.0206, stage0_l: 0.1420, stage0_h: 0.2062, stage1_loss_instance_mil: 0.1079, stage1_bag_acc: 23.4374, stage1_neg_loss: 0.0199, stage1_mean_ious: 0.2045, stage1_s: 0.0000, stage1_m: 0.0243, stage1_l: 0.1320, stage1_h: 0.1958, loss: 0.8775, grad_norm: 1.6592
+2024-10-08 23:07:12,004 - mmdet - INFO - Epoch [5][200/360]	lr: 1.000e-01, eta: 0:47:56, time: 0.611, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.7153, stage0_bag_acc: 21.7498, stage0_mean_ious: 0.3674, stage0_s: 0.0000, stage0_m: 0.0018, stage0_l: 0.1263, stage0_h: 0.3798, stage1_loss_instance_mil: 0.0970, stage1_bag_acc: 19.5790, stage1_neg_loss: 0.0211, stage1_mean_ious: 0.3439, stage1_s: 0.0000, stage1_m: 0.0016, stage1_l: 0.1168, stage1_h: 0.3567, loss: 0.8334, grad_norm: 0.7133
+2024-10-08 23:07:43,959 - mmdet - INFO - Epoch [5][250/360]	lr: 1.000e-01, eta: 0:47:33, time: 0.639, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6815, stage0_bag_acc: 19.0333, stage0_mean_ious: 0.2479, stage0_s: 0.0000, stage0_m: 0.0400, stage0_l: 0.1151, stage0_h: 0.2446, stage1_loss_instance_mil: 0.0930, stage1_bag_acc: 19.1716, stage1_neg_loss: 0.0180, stage1_mean_ious: 0.2362, stage1_s: 0.0000, stage1_m: 0.0405, stage1_l: 0.1114, stage1_h: 0.2334, loss: 0.7926, grad_norm: 0.3012
+2024-10-08 23:08:13,854 - mmdet - INFO - Epoch [5][300/360]	lr: 1.000e-01, eta: 0:47:03, time: 0.598, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6804, stage0_bag_acc: 17.3270, stage0_mean_ious: 0.1105, stage0_s: 0.0000, stage0_m: 0.0254, stage0_l: 0.1824, stage0_h: 0.0791, stage1_loss_instance_mil: 0.0876, stage1_bag_acc: 18.5589, stage1_neg_loss: 0.0170, stage1_mean_ious: 0.1022, stage1_s: 0.0000, stage1_m: 0.0223, stage1_l: 0.1720, stage1_h: 0.0733, loss: 0.7851, grad_norm: 0.2701
+2024-10-08 23:08:42,501 - mmdet - INFO - Epoch [5][350/360]	lr: 1.000e-01, eta: 0:46:30, time: 0.573, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6847, stage0_bag_acc: 18.3504, stage0_mean_ious: 0.1086, stage0_s: 0.0000, stage0_m: 0.0322, stage0_l: 0.1849, stage0_h: 0.0762, stage1_loss_instance_mil: 0.0871, stage1_bag_acc: 18.0291, stage1_neg_loss: 0.0221, stage1_mean_ious: 0.1011, stage1_s: 0.0000, stage1_m: 0.0299, stage1_l: 0.1612, stage1_h: 0.0720, loss: 0.7938, grad_norm: 0.3041
+2024-10-08 23:08:48,503 - mmdet - INFO - Saving checkpoint at 5 epochs
+2024-10-08 23:10:25,406 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:10:26,165 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0475
+2024-10-08 23:10:26,166 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.1806
+2024-10-08 23:10:26,166 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0793
+2024-10-08 23:10:26,166 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0293
+2024-10-08 23:10:26,166 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0141
+2024-10-08 23:10:26,166 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0037
+2024-10-08 23:10:26,166 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0004
+2024-10-08 23:10:26,166 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0064
+2024-10-08 23:10:26,166 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1437
+2024-10-08 23:10:26,167 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1498
+2024-10-08 23:10:26,167 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1433
+2024-10-08 23:10:26,167 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4000
+2024-10-08 23:10:26,167 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1433
+2024-10-08 23:10:26,167 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1433
+2024-10-08 23:10:26,167 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1019
+2024-10-08 23:10:26,167 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1407
+2024-10-08 23:10:26,167 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1480
+2024-10-08 23:10:26,177 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:10:26,177 - mmdet - INFO - Epoch(val) [5][360]	eval_iter_num: 720, bbox_mAP: 0.0470, bbox_mAP_50: 0.1810, bbox_mAP_75: 0.0790, bbox_mAP_s: 0.0290, bbox_mAP_m: 0.0140, bbox_mAP_l: 0.0040, bbox_mAP_copypaste: 0.047 0.181 0.079 0.029 0.014 0.004
+2024-10-08 23:11:01,823 - mmdet - INFO - Epoch [6][50/360]	lr: 1.000e-01, eta: 0:45:54, time: 0.713, data_time: 0.059, memory: 8677, stage0_loss_instance_mil: 0.6808, stage0_bag_acc: 19.6362, stage0_mean_ious: 0.0965, stage0_s: 0.0000, stage0_m: 0.0484, stage0_l: 0.1725, stage0_h: 0.0694, stage1_loss_instance_mil: 0.0869, stage1_bag_acc: 14.3801, stage1_neg_loss: 0.0199, stage1_mean_ious: 0.0890, stage1_s: 0.0000, stage1_m: 0.0462, stage1_l: 0.1520, stage1_h: 0.0645, loss: 0.7876, grad_norm: 0.2348
+2024-10-08 23:11:31,525 - mmdet - INFO - Epoch [6][100/360]	lr: 1.000e-01, eta: 0:45:25, time: 0.594, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6731, stage0_bag_acc: 17.8375, stage0_mean_ious: 0.1032, stage0_s: 0.0000, stage0_m: 0.0297, stage0_l: 0.1564, stage0_h: 0.0770, stage1_loss_instance_mil: 0.0902, stage1_bag_acc: 19.7032, stage1_neg_loss: 0.0190, stage1_mean_ious: 0.0945, stage1_s: 0.0000, stage1_m: 0.0307, stage1_l: 0.1428, stage1_h: 0.0698, loss: 0.7823, grad_norm: 0.2240
+2024-10-08 23:12:02,121 - mmdet - INFO - Epoch [6][150/360]	lr: 1.000e-01, eta: 0:44:57, time: 0.612, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6828, stage0_bag_acc: 20.1610, stage0_mean_ious: 0.1172, stage0_s: 0.0000, stage0_m: 0.0665, stage0_l: 0.2076, stage0_h: 0.0831, stage1_loss_instance_mil: 0.0873, stage1_bag_acc: 15.5752, stage1_neg_loss: 0.0207, stage1_mean_ious: 0.1061, stage1_s: 0.0000, stage1_m: 0.0620, stage1_l: 0.1827, stage1_h: 0.0757, loss: 0.7908, grad_norm: 0.2107
+2024-10-08 23:12:33,474 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:12:33,474 - mmdet - INFO - Epoch [6][200/360]	lr: 1.000e-01, eta: 0:44:31, time: 0.627, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6764, stage0_bag_acc: 17.8172, stage0_mean_ious: 0.1077, stage0_s: 0.0000, stage0_m: 0.0638, stage0_l: 0.2080, stage0_h: 0.0750, stage1_loss_instance_mil: 0.0882, stage1_bag_acc: 17.8479, stage1_neg_loss: 0.0204, stage1_mean_ious: 0.1005, stage1_s: 0.0000, stage1_m: 0.0571, stage1_l: 0.1981, stage1_h: 0.0700, loss: 0.7851, grad_norm: 0.2705
+2024-10-08 23:13:02,777 - mmdet - INFO - Epoch [6][250/360]	lr: 1.000e-01, eta: 0:44:00, time: 0.586, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6790, stage0_bag_acc: 15.9615, stage0_mean_ious: 0.1189, stage0_s: 0.0000, stage0_m: 0.0533, stage0_l: 0.1996, stage0_h: 0.0843, stage1_loss_instance_mil: 0.0886, stage1_bag_acc: 20.7069, stage1_neg_loss: 0.0203, stage1_mean_ious: 0.1088, stage1_s: 0.0000, stage1_m: 0.0535, stage1_l: 0.1761, stage1_h: 0.0762, loss: 0.7878, grad_norm: 0.2391
+2024-10-08 23:13:31,457 - mmdet - INFO - Epoch [6][300/360]	lr: 1.000e-01, eta: 0:43:28, time: 0.574, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6593, stage0_bag_acc: 25.0310, stage0_mean_ious: 0.1056, stage0_s: 0.0000, stage0_m: 0.0666, stage0_l: 0.1828, stage0_h: 0.0730, stage1_loss_instance_mil: 0.1221, stage1_bag_acc: 24.6108, stage1_neg_loss: 0.0597, stage1_mean_ious: 0.0989, stage1_s: 0.0000, stage1_m: 0.0588, stage1_l: 0.1716, stage1_h: 0.0677, loss: 0.8411, grad_norm: 2.5033
+2024-10-08 23:14:00,435 - mmdet - INFO - Epoch [6][350/360]	lr: 1.000e-01, eta: 0:42:56, time: 0.580, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6644, stage0_bag_acc: 22.9365, stage0_mean_ious: 0.1134, stage0_s: 0.0000, stage0_m: 0.0322, stage0_l: 0.2141, stage0_h: 0.0725, stage1_loss_instance_mil: 0.0976, stage1_bag_acc: 20.3679, stage1_neg_loss: 0.0231, stage1_mean_ious: 0.1039, stage1_s: 0.0000, stage1_m: 0.0289, stage1_l: 0.2009, stage1_h: 0.0660, loss: 0.7851, grad_norm: 0.5009
+2024-10-08 23:14:06,467 - mmdet - INFO - Saving checkpoint at 6 epochs
+2024-10-08 23:15:44,592 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:15:45,391 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0585
+2024-10-08 23:15:45,392 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2259
+2024-10-08 23:15:45,392 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0988
+2024-10-08 23:15:45,392 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0318
+2024-10-08 23:15:45,392 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0151
+2024-10-08 23:15:45,392 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0034
+2024-10-08 23:15:45,392 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 23:15:45,392 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0119
+2024-10-08 23:15:45,392 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1673
+2024-10-08 23:15:45,393 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1952
+2024-10-08 23:15:45,393 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1611
+2024-10-08 23:15:45,393 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4490
+2024-10-08 23:15:45,393 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1611
+2024-10-08 23:15:45,393 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1611
+2024-10-08 23:15:45,393 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1200
+2024-10-08 23:15:45,393 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1651
+2024-10-08 23:15:45,393 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1928
+2024-10-08 23:15:45,404 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:15:45,405 - mmdet - INFO - Epoch(val) [6][360]	eval_iter_num: 720, bbox_mAP: 0.0590, bbox_mAP_50: 0.2260, bbox_mAP_75: 0.0990, bbox_mAP_s: 0.0320, bbox_mAP_m: 0.0150, bbox_mAP_l: 0.0030, bbox_mAP_copypaste: 0.059 0.226 0.099 0.032 0.015 0.003
+2024-10-08 23:16:17,603 - mmdet - INFO - Epoch [7][50/360]	lr: 1.000e-01, eta: 0:42:14, time: 0.644, data_time: 0.060, memory: 8677, stage0_loss_instance_mil: 0.6761, stage0_bag_acc: 19.7654, stage0_mean_ious: 0.1310, stage0_s: 0.0000, stage0_m: 0.0515, stage0_l: 0.2467, stage0_h: 0.0891, stage1_loss_instance_mil: 0.0891, stage1_bag_acc: 23.4582, stage1_neg_loss: 0.0234, stage1_mean_ious: 0.1217, stage1_s: 0.0000, stage1_m: 0.0520, stage1_l: 0.2301, stage1_h: 0.0809, loss: 0.7886, grad_norm: 0.2592
+2024-10-08 23:16:47,978 - mmdet - INFO - Epoch [7][100/360]	lr: 1.000e-01, eta: 0:41:45, time: 0.608, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6802, stage0_bag_acc: 17.4495, stage0_mean_ious: 0.1037, stage0_s: 0.0000, stage0_m: 0.0323, stage0_l: 0.1706, stage0_h: 0.0714, stage1_loss_instance_mil: 0.0848, stage1_bag_acc: 13.8285, stage1_neg_loss: 0.0201, stage1_mean_ious: 0.0992, stage1_s: 0.0000, stage1_m: 0.0314, stage1_l: 0.1656, stage1_h: 0.0676, loss: 0.7851, grad_norm: 0.1673
+2024-10-08 23:17:18,355 - mmdet - INFO - Epoch [7][150/360]	lr: 1.000e-01, eta: 0:41:17, time: 0.608, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6808, stage0_bag_acc: 22.4723, stage0_mean_ious: 0.1303, stage0_s: 0.0000, stage0_m: 0.0395, stage0_l: 0.2348, stage0_h: 0.0884, stage1_loss_instance_mil: 0.0864, stage1_bag_acc: 16.5554, stage1_neg_loss: 0.0202, stage1_mean_ious: 0.1230, stage1_s: 0.0000, stage1_m: 0.0323, stage1_l: 0.2137, stage1_h: 0.0849, loss: 0.7874, grad_norm: 0.1814
+2024-10-08 23:17:49,296 - mmdet - INFO - Epoch [7][200/360]	lr: 1.000e-01, eta: 0:40:49, time: 0.619, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6747, stage0_bag_acc: 20.1117, stage0_mean_ious: 0.1064, stage0_s: 0.0000, stage0_m: 0.0434, stage0_l: 0.1739, stage0_h: 0.0774, stage1_loss_instance_mil: 0.0857, stage1_bag_acc: 20.6057, stage1_neg_loss: 0.0199, stage1_mean_ious: 0.1005, stage1_s: 0.0000, stage1_m: 0.0386, stage1_l: 0.1670, stage1_h: 0.0728, loss: 0.7803, grad_norm: 0.1677
+2024-10-08 23:18:19,705 - mmdet - INFO - Epoch [7][250/360]	lr: 1.000e-01, eta: 0:40:21, time: 0.608, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6774, stage0_bag_acc: 18.3146, stage0_mean_ious: 0.1046, stage0_s: 0.0000, stage0_m: 0.0925, stage0_l: 0.1392, stage0_h: 0.0775, stage1_loss_instance_mil: 0.0850, stage1_bag_acc: 18.9438, stage1_neg_loss: 0.0203, stage1_mean_ious: 0.1045, stage1_s: 0.0000, stage1_m: 0.0928, stage1_l: 0.1477, stage1_h: 0.0748, loss: 0.7826, grad_norm: 0.1813
+2024-10-08 23:18:49,225 - mmdet - INFO - Epoch [7][300/360]	lr: 1.000e-01, eta: 0:39:51, time: 0.590, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6845, stage0_bag_acc: 16.0753, stage0_mean_ious: 0.1051, stage0_s: 0.0000, stage0_m: 0.0261, stage0_l: 0.1842, stage0_h: 0.0783, stage1_loss_instance_mil: 0.0832, stage1_bag_acc: 11.6291, stage1_neg_loss: 0.0195, stage1_mean_ious: 0.1005, stage1_s: 0.0000, stage1_m: 0.0274, stage1_l: 0.1822, stage1_h: 0.0731, loss: 0.7872, grad_norm: 0.1691
+2024-10-08 23:19:20,409 - mmdet - INFO - Epoch [7][350/360]	lr: 1.000e-01, eta: 0:39:23, time: 0.624, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.6764, stage0_bag_acc: 21.6846, stage0_mean_ious: 0.1036, stage0_s: 0.0000, stage0_m: 0.0322, stage0_l: 0.1852, stage0_h: 0.0703, stage1_loss_instance_mil: 0.0869, stage1_bag_acc: 21.0679, stage1_neg_loss: 0.0175, stage1_mean_ious: 0.0979, stage1_s: 0.0000, stage1_m: 0.0332, stage1_l: 0.1796, stage1_h: 0.0654, loss: 0.7808, grad_norm: 0.1805
+2024-10-08 23:19:26,576 - mmdet - INFO - Saving checkpoint at 7 epochs
+2024-10-08 23:21:04,763 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0435
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.1750
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0694
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0223
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0101
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0032
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0060
+2024-10-08 23:21:05,592 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1518
+2024-10-08 23:21:05,593 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1597
+2024-10-08 23:21:05,593 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1470
+2024-10-08 23:21:05,593 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4117
+2024-10-08 23:21:05,593 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1470
+2024-10-08 23:21:05,593 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1470
+2024-10-08 23:21:05,593 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1092
+2024-10-08 23:21:05,593 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1489
+2024-10-08 23:21:05,593 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1574
+2024-10-08 23:21:05,603 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:21:05,604 - mmdet - INFO - Epoch(val) [7][360]	eval_iter_num: 720, bbox_mAP: 0.0440, bbox_mAP_50: 0.1750, bbox_mAP_75: 0.0690, bbox_mAP_s: 0.0220, bbox_mAP_m: 0.0100, bbox_mAP_l: 0.0030, bbox_mAP_copypaste: 0.044 0.175 0.069 0.022 0.010 0.003
+2024-10-08 23:21:38,765 - mmdet - INFO - Epoch [8][50/360]	lr: 1.000e-01, eta: 0:38:44, time: 0.663, data_time: 0.057, memory: 8677, stage0_loss_instance_mil: 0.6793, stage0_bag_acc: 17.3546, stage0_mean_ious: 0.1147, stage0_s: 0.0000, stage0_m: 0.0772, stage0_l: 0.1897, stage0_h: 0.0747, stage1_loss_instance_mil: 0.0835, stage1_bag_acc: 16.2439, stage1_neg_loss: 0.0202, stage1_mean_ious: 0.1089, stage1_s: 0.0000, stage1_m: 0.0714, stage1_l: 0.1882, stage1_h: 0.0693, loss: 0.7829, grad_norm: 0.1816
+2024-10-08 23:22:09,681 - mmdet - INFO - Epoch [8][100/360]	lr: 1.000e-01, eta: 0:38:16, time: 0.618, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6792, stage0_bag_acc: 20.3379, stage0_mean_ious: 0.1170, stage0_s: 0.0000, stage0_m: 0.0624, stage0_l: 0.2023, stage0_h: 0.0840, stage1_loss_instance_mil: 0.0851, stage1_bag_acc: 14.9477, stage1_neg_loss: 0.0190, stage1_mean_ious: 0.1118, stage1_s: 0.0000, stage1_m: 0.0558, stage1_l: 0.1805, stage1_h: 0.0826, loss: 0.7833, grad_norm: 0.1775
+2024-10-08 23:22:42,055 - mmdet - INFO - Epoch [8][150/360]	lr: 1.000e-01, eta: 0:37:50, time: 0.647, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6845, stage0_bag_acc: 10.7679, stage0_mean_ious: 0.1055, stage0_s: 0.0107, stage0_m: 0.0171, stage0_l: 0.1852, stage0_h: 0.0766, stage1_loss_instance_mil: 0.0818, stage1_bag_acc: 11.6514, stage1_neg_loss: 0.0180, stage1_mean_ious: 0.1002, stage1_s: 0.0074, stage1_m: 0.0170, stage1_l: 0.1752, stage1_h: 0.0728, loss: 0.7844, grad_norm: 0.1754
+2024-10-08 23:23:13,041 - mmdet - INFO - Epoch [8][200/360]	lr: 1.000e-01, eta: 0:37:21, time: 0.620, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6763, stage0_bag_acc: 18.2369, stage0_mean_ious: 0.1079, stage0_s: 0.0000, stage0_m: 0.0376, stage0_l: 0.1782, stage0_h: 0.0802, stage1_loss_instance_mil: 0.0842, stage1_bag_acc: 20.2200, stage1_neg_loss: 0.0192, stage1_mean_ious: 0.0999, stage1_s: 0.0000, stage1_m: 0.0308, stage1_l: 0.1741, stage1_h: 0.0735, loss: 0.7798, grad_norm: 0.1946
+2024-10-08 23:23:41,864 - mmdet - INFO - Epoch [8][250/360]	lr: 1.000e-01, eta: 0:36:50, time: 0.576, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6865, stage0_bag_acc: 19.0784, stage0_mean_ious: 0.0973, stage0_s: 0.0000, stage0_m: 0.0279, stage0_l: 0.1573, stage0_h: 0.0743, stage1_loss_instance_mil: 0.0841, stage1_bag_acc: 13.6691, stage1_neg_loss: 0.0198, stage1_mean_ious: 0.0916, stage1_s: 0.0000, stage1_m: 0.0262, stage1_l: 0.1403, stage1_h: 0.0717, loss: 0.7903, grad_norm: 0.1904
+2024-10-08 23:24:11,468 - mmdet - INFO - Epoch [8][300/360]	lr: 1.000e-01, eta: 0:36:20, time: 0.592, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6821, stage0_bag_acc: 17.2287, stage0_mean_ious: 0.1138, stage0_s: 0.0000, stage0_m: 0.0369, stage0_l: 0.2148, stage0_h: 0.0798, stage1_loss_instance_mil: 0.0828, stage1_bag_acc: 17.1104, stage1_neg_loss: 0.0198, stage1_mean_ious: 0.1063, stage1_s: 0.0000, stage1_m: 0.0365, stage1_l: 0.1966, stage1_h: 0.0746, loss: 0.7847, grad_norm: 0.1858
+2024-10-08 23:24:41,548 - mmdet - INFO - Epoch [8][350/360]	lr: 1.000e-01, eta: 0:35:51, time: 0.602, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6717, stage0_bag_acc: 22.4273, stage0_mean_ious: 0.1051, stage0_s: 0.0000, stage0_m: 0.0453, stage0_l: 0.1895, stage0_h: 0.0710, stage1_loss_instance_mil: 0.0865, stage1_bag_acc: 24.6813, stage1_neg_loss: 0.0189, stage1_mean_ious: 0.1006, stage1_s: 0.0000, stage1_m: 0.0418, stage1_l: 0.1872, stage1_h: 0.0674, loss: 0.7770, grad_norm: 0.1901
+2024-10-08 23:24:47,862 - mmdet - INFO - Saving checkpoint at 8 epochs
+2024-10-08 23:26:26,095 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:26:26,865 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0438
+2024-10-08 23:26:26,865 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.1808
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0700
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0192
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0073
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0020
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0003
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0058
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1528
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1488
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1465
+2024-10-08 23:26:26,866 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4212
+2024-10-08 23:26:26,867 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1465
+2024-10-08 23:26:26,867 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1465
+2024-10-08 23:26:26,867 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1130
+2024-10-08 23:26:26,867 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1497
+2024-10-08 23:26:26,867 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1465
+2024-10-08 23:26:26,877 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:26:26,878 - mmdet - INFO - Epoch(val) [8][360]	eval_iter_num: 720, bbox_mAP: 0.0440, bbox_mAP_50: 0.1810, bbox_mAP_75: 0.0700, bbox_mAP_s: 0.0190, bbox_mAP_m: 0.0070, bbox_mAP_l: 0.0020, bbox_mAP_copypaste: 0.044 0.181 0.070 0.019 0.007 0.002
+2024-10-08 23:26:59,729 - mmdet - INFO - Epoch [9][50/360]	lr: 1.000e-02, eta: 0:35:12, time: 0.657, data_time: 0.059, memory: 8677, stage0_loss_instance_mil: 0.6674, stage0_bag_acc: 22.6030, stage0_mean_ious: 0.0989, stage0_s: 0.0000, stage0_m: 0.0470, stage0_l: 0.1583, stage0_h: 0.0689, stage1_loss_instance_mil: 0.0863, stage1_bag_acc: 17.1092, stage1_neg_loss: 0.0144, stage1_mean_ious: 0.0909, stage1_s: 0.0000, stage1_m: 0.0416, stage1_l: 0.1390, stage1_h: 0.0643, loss: 0.7680, grad_norm: 0.2571
+2024-10-08 23:27:29,235 - mmdet - INFO - Epoch [9][100/360]	lr: 1.000e-02, eta: 0:34:42, time: 0.590, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6751, stage0_bag_acc: 20.1019, stage0_mean_ious: 0.0922, stage0_s: 0.0000, stage0_m: 0.0242, stage0_l: 0.1353, stage0_h: 0.0712, stage1_loss_instance_mil: 0.0814, stage1_bag_acc: 19.5659, stage1_neg_loss: 0.0170, stage1_mean_ious: 0.0847, stage1_s: 0.0000, stage1_m: 0.0229, stage1_l: 0.1254, stage1_h: 0.0654, loss: 0.7735, grad_norm: 0.2190
+2024-10-08 23:27:59,990 - mmdet - INFO - Epoch [9][150/360]	lr: 1.000e-02, eta: 0:34:13, time: 0.615, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6654, stage0_bag_acc: 18.5635, stage0_mean_ious: 0.1095, stage0_s: 0.0000, stage0_m: 0.0314, stage0_l: 0.1669, stage0_h: 0.0793, stage1_loss_instance_mil: 0.0859, stage1_bag_acc: 22.1554, stage1_neg_loss: 0.0167, stage1_mean_ious: 0.1021, stage1_s: 0.0000, stage1_m: 0.0320, stage1_l: 0.1622, stage1_h: 0.0716, loss: 0.7680, grad_norm: 0.2418
+2024-10-08 23:28:29,617 - mmdet - INFO - Epoch [9][200/360]	lr: 1.000e-02, eta: 0:33:43, time: 0.593, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6650, stage0_bag_acc: 21.3462, stage0_mean_ious: 0.1136, stage0_s: 0.0000, stage0_m: 0.0133, stage0_l: 0.2088, stage0_h: 0.0797, stage1_loss_instance_mil: 0.0894, stage1_bag_acc: 21.3462, stage1_neg_loss: 0.0174, stage1_mean_ious: 0.1017, stage1_s: 0.0000, stage1_m: 0.0123, stage1_l: 0.1820, stage1_h: 0.0720, loss: 0.7717, grad_norm: 0.3674
+2024-10-08 23:28:58,669 - mmdet - INFO - Epoch [9][250/360]	lr: 1.000e-02, eta: 0:33:13, time: 0.581, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.6473, stage0_bag_acc: 23.5851, stage0_mean_ious: 0.1132, stage0_s: 0.0000, stage0_m: 0.0940, stage0_l: 0.1993, stage0_h: 0.0706, stage1_loss_instance_mil: 0.0962, stage1_bag_acc: 24.0137, stage1_neg_loss: 0.0199, stage1_mean_ious: 0.1030, stage1_s: 0.0000, stage1_m: 0.0878, stage1_l: 0.1754, stage1_h: 0.0647, loss: 0.7635, grad_norm: 0.4138
+2024-10-08 23:29:29,085 - mmdet - INFO - Epoch [9][300/360]	lr: 1.000e-02, eta: 0:32:43, time: 0.608, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6387, stage0_bag_acc: 23.0041, stage0_mean_ious: 0.1097, stage0_s: 0.0000, stage0_m: 0.0493, stage0_l: 0.1631, stage0_h: 0.0816, stage1_loss_instance_mil: 0.0992, stage1_bag_acc: 22.8027, stage1_neg_loss: 0.0211, stage1_mean_ious: 0.0974, stage1_s: 0.0000, stage1_m: 0.0462, stage1_l: 0.1411, stage1_h: 0.0730, loss: 0.7590, grad_norm: 0.5345
+2024-10-08 23:30:00,061 - mmdet - INFO - Epoch [9][350/360]	lr: 1.000e-02, eta: 0:32:15, time: 0.619, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6356, stage0_bag_acc: 28.5753, stage0_mean_ious: 0.1000, stage0_s: 0.0000, stage0_m: 0.0405, stage0_l: 0.1891, stage0_h: 0.0670, stage1_loss_instance_mil: 0.0989, stage1_bag_acc: 17.5073, stage1_neg_loss: 0.0289, stage1_mean_ious: 0.0927, stage1_s: 0.0000, stage1_m: 0.0401, stage1_l: 0.1792, stage1_h: 0.0618, loss: 0.7634, grad_norm: 0.7615
+2024-10-08 23:30:06,359 - mmdet - INFO - Saving checkpoint at 9 epochs
+2024-10-08 23:31:44,089 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:31:44,906 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0492
+2024-10-08 23:31:44,906 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2009
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0780
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0269
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0118
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0032
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0001
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0062
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1597
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1472
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1519
+2024-10-08 23:31:44,907 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4296
+2024-10-08 23:31:44,908 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1519
+2024-10-08 23:31:44,908 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1519
+2024-10-08 23:31:44,908 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0747
+2024-10-08 23:31:44,908 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1564
+2024-10-08 23:31:44,908 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1446
+2024-10-08 23:31:44,919 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:31:44,919 - mmdet - INFO - Epoch(val) [9][360]	eval_iter_num: 720, bbox_mAP: 0.0490, bbox_mAP_50: 0.2010, bbox_mAP_75: 0.0780, bbox_mAP_s: 0.0270, bbox_mAP_m: 0.0120, bbox_mAP_l: 0.0030, bbox_mAP_copypaste: 0.049 0.201 0.078 0.027 0.012 0.003
+2024-10-08 23:32:16,851 - mmdet - INFO - Epoch [10][50/360]	lr: 1.000e-02, eta: 0:31:35, time: 0.638, data_time: 0.058, memory: 8677, stage0_loss_instance_mil: 0.6436, stage0_bag_acc: 27.7451, stage0_mean_ious: 0.0986, stage0_s: 0.0000, stage0_m: 0.0549, stage0_l: 0.1546, stage0_h: 0.0742, stage1_loss_instance_mil: 0.0930, stage1_bag_acc: 20.1797, stage1_neg_loss: 0.0251, stage1_mean_ious: 0.0919, stage1_s: 0.0000, stage1_m: 0.0527, stage1_l: 0.1437, stage1_h: 0.0691, loss: 0.7617, grad_norm: 0.6569
+2024-10-08 23:32:46,796 - mmdet - INFO - Epoch [10][100/360]	lr: 1.000e-02, eta: 0:31:06, time: 0.599, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6180, stage0_bag_acc: 29.8504, stage0_mean_ious: 0.1044, stage0_s: 0.0000, stage0_m: 0.0300, stage0_l: 0.1574, stage0_h: 0.0718, stage1_loss_instance_mil: 0.1024, stage1_bag_acc: 19.2103, stage1_neg_loss: 0.0249, stage1_mean_ious: 0.0963, stage1_s: 0.0000, stage1_m: 0.0295, stage1_l: 0.1448, stage1_h: 0.0660, loss: 0.7453, grad_norm: 0.9157
+2024-10-08 23:33:16,925 - mmdet - INFO - Epoch [10][150/360]	lr: 1.000e-02, eta: 0:30:37, time: 0.603, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6046, stage0_bag_acc: 29.4958, stage0_mean_ious: 0.1088, stage0_s: 0.0000, stage0_m: 0.0321, stage0_l: 0.1665, stage0_h: 0.0768, stage1_loss_instance_mil: 0.1036, stage1_bag_acc: 30.3779, stage1_neg_loss: 0.0266, stage1_mean_ious: 0.1017, stage1_s: 0.0000, stage1_m: 0.0246, stage1_l: 0.1487, stage1_h: 0.0724, loss: 0.7347, grad_norm: 0.9950
+2024-10-08 23:33:47,721 - mmdet - INFO - Epoch [10][200/360]	lr: 1.000e-02, eta: 0:30:08, time: 0.616, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.5802, stage0_bag_acc: 36.7979, stage0_mean_ious: 0.1108, stage0_s: 0.0000, stage0_m: 0.0270, stage0_l: 0.1885, stage0_h: 0.0825, stage1_loss_instance_mil: 0.1351, stage1_bag_acc: 31.8587, stage1_neg_loss: 0.0274, stage1_mean_ious: 0.1003, stage1_s: 0.0000, stage1_m: 0.0279, stage1_l: 0.1622, stage1_h: 0.0754, loss: 0.7427, grad_norm: 1.4229
+2024-10-08 23:34:17,921 - mmdet - INFO - Epoch [10][250/360]	lr: 1.000e-02, eta: 0:29:39, time: 0.604, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.6097, stage0_bag_acc: 32.6660, stage0_mean_ious: 0.1017, stage0_s: 0.0000, stage0_m: 0.0483, stage0_l: 0.1309, stage0_h: 0.0788, stage1_loss_instance_mil: 0.1164, stage1_bag_acc: 32.8443, stage1_neg_loss: 0.0271, stage1_mean_ious: 0.0934, stage1_s: 0.0000, stage1_m: 0.0428, stage1_l: 0.1201, stage1_h: 0.0714, loss: 0.7532, grad_norm: 1.4704
+2024-10-08 23:34:48,292 - mmdet - INFO - Epoch [10][300/360]	lr: 1.000e-02, eta: 0:29:09, time: 0.607, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.5828, stage0_bag_acc: 37.1974, stage0_mean_ious: 0.1130, stage0_s: 0.0000, stage0_m: 0.0281, stage0_l: 0.1744, stage0_h: 0.0829, stage1_loss_instance_mil: 0.1274, stage1_bag_acc: 37.7236, stage1_neg_loss: 0.0237, stage1_mean_ious: 0.1016, stage1_s: 0.0000, stage1_m: 0.0257, stage1_l: 0.1552, stage1_h: 0.0743, loss: 0.7339, grad_norm: 1.3713
+2024-10-08 23:35:18,977 - mmdet - INFO - Epoch [10][350/360]	lr: 1.000e-02, eta: 0:28:40, time: 0.614, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.5778, stage0_bag_acc: 36.7470, stage0_mean_ious: 0.1094, stage0_s: 0.0000, stage0_m: 0.0140, stage0_l: 0.1814, stage0_h: 0.0811, stage1_loss_instance_mil: 0.1192, stage1_bag_acc: 37.6337, stage1_neg_loss: 0.0238, stage1_mean_ious: 0.1027, stage1_s: 0.0000, stage1_m: 0.0143, stage1_l: 0.1751, stage1_h: 0.0740, loss: 0.7207, grad_norm: 1.1264
+2024-10-08 23:35:25,137 - mmdet - INFO - Saving checkpoint at 10 epochs
+2024-10-08 23:37:02,538 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:37:03,312 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0530
+2024-10-08 23:37:03,312 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2074
+2024-10-08 23:37:03,312 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0890
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0275
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0116
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0034
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0001
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0087
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1616
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1762
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1574
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4336
+2024-10-08 23:37:03,313 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1574
+2024-10-08 23:37:03,314 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1574
+2024-10-08 23:37:03,314 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1262
+2024-10-08 23:37:03,314 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1588
+2024-10-08 23:37:03,314 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1738
+2024-10-08 23:37:03,324 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:37:03,324 - mmdet - INFO - Epoch(val) [10][360]	eval_iter_num: 720, bbox_mAP: 0.0530, bbox_mAP_50: 0.2070, bbox_mAP_75: 0.0890, bbox_mAP_s: 0.0270, bbox_mAP_m: 0.0120, bbox_mAP_l: 0.0030, bbox_mAP_copypaste: 0.053 0.207 0.089 0.027 0.012 0.003
+2024-10-08 23:37:35,623 - mmdet - INFO - Epoch [11][50/360]	lr: 1.000e-02, eta: 0:28:02, time: 0.646, data_time: 0.060, memory: 8677, stage0_loss_instance_mil: 0.5728, stage0_bag_acc: 38.4867, stage0_mean_ious: 0.1004, stage0_s: 0.0000, stage0_m: 0.0183, stage0_l: 0.1804, stage0_h: 0.0745, stage1_loss_instance_mil: 0.1254, stage1_bag_acc: 45.5823, stage1_neg_loss: 0.0257, stage1_mean_ious: 0.0950, stage1_s: 0.0000, stage1_m: 0.0178, stage1_l: 0.1748, stage1_h: 0.0706, loss: 0.7239, grad_norm: 1.1211
+2024-10-08 23:38:05,913 - mmdet - INFO - Epoch [11][100/360]	lr: 1.000e-02, eta: 0:27:33, time: 0.606, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.5392, stage0_bag_acc: 44.7058, stage0_mean_ious: 0.1097, stage0_s: 0.0000, stage0_m: 0.0257, stage0_l: 0.1647, stage0_h: 0.0867, stage1_loss_instance_mil: 0.1350, stage1_bag_acc: 44.1703, stage1_neg_loss: 0.0241, stage1_mean_ious: 0.1012, stage1_s: 0.0000, stage1_m: 0.0255, stage1_l: 0.1591, stage1_h: 0.0785, loss: 0.6984, grad_norm: 1.0649
+2024-10-08 23:38:35,807 - mmdet - INFO - Epoch [11][150/360]	lr: 1.000e-02, eta: 0:27:03, time: 0.598, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.5698, stage0_bag_acc: 36.3248, stage0_mean_ious: 0.1056, stage0_s: 0.0000, stage0_m: 0.0648, stage0_l: 0.1613, stage0_h: 0.0745, stage1_loss_instance_mil: 0.1465, stage1_bag_acc: 32.3337, stage1_neg_loss: 0.0351, stage1_mean_ious: 0.1019, stage1_s: 0.0000, stage1_m: 0.0696, stage1_l: 0.1621, stage1_h: 0.0698, loss: 0.7514, grad_norm: 1.1603
+2024-10-08 23:39:05,413 - mmdet - INFO - Epoch [11][200/360]	lr: 1.000e-02, eta: 0:26:33, time: 0.592, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.5250, stage0_bag_acc: 47.8877, stage0_mean_ious: 0.1076, stage0_s: 0.0000, stage0_m: 0.0388, stage0_l: 0.1864, stage0_h: 0.0785, stage1_loss_instance_mil: 0.1516, stage1_bag_acc: 42.5063, stage1_neg_loss: 0.0259, stage1_mean_ious: 0.0988, stage1_s: 0.0000, stage1_m: 0.0270, stage1_l: 0.1680, stage1_h: 0.0740, loss: 0.7025, grad_norm: 1.0211
+2024-10-08 23:39:35,587 - mmdet - INFO - Epoch [11][250/360]	lr: 1.000e-02, eta: 0:26:04, time: 0.603, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.4864, stage0_bag_acc: 48.0442, stage0_mean_ious: 0.0992, stage0_s: 0.0168, stage0_m: 0.0300, stage0_l: 0.1522, stage0_h: 0.0745, stage1_loss_instance_mil: 0.1433, stage1_bag_acc: 50.6880, stage1_neg_loss: 0.0338, stage1_mean_ious: 0.0935, stage1_s: 0.0108, stage1_m: 0.0249, stage1_l: 0.1607, stage1_h: 0.0682, loss: 0.6636, grad_norm: 1.1800
+2024-10-08 23:40:06,886 - mmdet - INFO - Epoch [11][300/360]	lr: 1.000e-02, eta: 0:25:35, time: 0.626, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.5004, stage0_bag_acc: 47.1130, stage0_mean_ious: 0.1179, stage0_s: 0.0000, stage0_m: 0.0558, stage0_l: 0.2165, stage0_h: 0.0833, stage1_loss_instance_mil: 0.1635, stage1_bag_acc: 51.4488, stage1_neg_loss: 0.0373, stage1_mean_ious: 0.1075, stage1_s: 0.0000, stage1_m: 0.0606, stage1_l: 0.1934, stage1_h: 0.0754, loss: 0.7012, grad_norm: 1.7030
+2024-10-08 23:40:35,481 - mmdet - INFO - Epoch [11][350/360]	lr: 1.000e-02, eta: 0:25:04, time: 0.572, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.5008, stage0_bag_acc: 46.2223, stage0_mean_ious: 0.1100, stage0_s: 0.0000, stage0_m: 0.0469, stage0_l: 0.1804, stage0_h: 0.0838, stage1_loss_instance_mil: 0.1324, stage1_bag_acc: 47.0510, stage1_neg_loss: 0.0387, stage1_mean_ious: 0.1034, stage1_s: 0.0000, stage1_m: 0.0454, stage1_l: 0.1742, stage1_h: 0.0778, loss: 0.6720, grad_norm: 1.3762
+2024-10-08 23:40:41,702 - mmdet - INFO - Saving checkpoint at 11 epochs
+2024-10-08 23:42:16,927 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:42:17,692 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0721
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2613
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1202
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0442
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0216
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0079
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0001
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0096
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1818
+2024-10-08 23:42:17,693 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1703
+2024-10-08 23:42:17,694 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1748
+2024-10-08 23:42:17,694 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4733
+2024-10-08 23:42:17,694 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1748
+2024-10-08 23:42:17,694 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1748
+2024-10-08 23:42:17,694 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0953
+2024-10-08 23:42:17,694 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1788
+2024-10-08 23:42:17,694 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1680
+2024-10-08 23:42:17,704 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:42:17,704 - mmdet - INFO - Epoch(val) [11][360]	eval_iter_num: 720, bbox_mAP: 0.0720, bbox_mAP_50: 0.2610, bbox_mAP_75: 0.1200, bbox_mAP_s: 0.0440, bbox_mAP_m: 0.0220, bbox_mAP_l: 0.0080, bbox_mAP_copypaste: 0.072 0.261 0.120 0.044 0.022 0.008
+2024-10-08 23:42:51,111 - mmdet - INFO - Epoch [12][50/360]	lr: 1.000e-03, eta: 0:24:27, time: 0.668, data_time: 0.059, memory: 8677, stage0_loss_instance_mil: 0.4879, stage0_bag_acc: 49.6773, stage0_mean_ious: 0.1148, stage0_s: 0.0000, stage0_m: 0.0606, stage0_l: 0.2196, stage0_h: 0.0805, stage1_loss_instance_mil: 0.1415, stage1_bag_acc: 53.7212, stage1_neg_loss: 0.0282, stage1_mean_ious: 0.1099, stage1_s: 0.0000, stage1_m: 0.0593, stage1_l: 0.2089, stage1_h: 0.0758, loss: 0.6576, grad_norm: 1.1702
+2024-10-08 23:43:22,016 - mmdet - INFO - Epoch [12][100/360]	lr: 1.000e-03, eta: 0:23:58, time: 0.618, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4907, stage0_bag_acc: 47.1605, stage0_mean_ious: 0.0954, stage0_s: 0.0000, stage0_m: 0.0162, stage0_l: 0.1600, stage0_h: 0.0723, stage1_loss_instance_mil: 0.1359, stage1_bag_acc: 53.5311, stage1_neg_loss: 0.0394, stage1_mean_ious: 0.0870, stage1_s: 0.0000, stage1_m: 0.0202, stage1_l: 0.1348, stage1_h: 0.0666, loss: 0.6660, grad_norm: 1.1830
+2024-10-08 23:43:51,744 - mmdet - INFO - Epoch [12][150/360]	lr: 1.000e-03, eta: 0:23:29, time: 0.595, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4746, stage0_bag_acc: 48.7703, stage0_mean_ious: 0.1077, stage0_s: 0.0000, stage0_m: 0.0350, stage0_l: 0.2095, stage0_h: 0.0724, stage1_loss_instance_mil: 0.1368, stage1_bag_acc: 51.3913, stage1_neg_loss: 0.0389, stage1_mean_ious: 0.1013, stage1_s: 0.0000, stage1_m: 0.0407, stage1_l: 0.1988, stage1_h: 0.0681, loss: 0.6502, grad_norm: 1.1379
+2024-10-08 23:44:20,557 - mmdet - INFO - Epoch [12][200/360]	lr: 1.000e-03, eta: 0:22:58, time: 0.576, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.4576, stage0_bag_acc: 51.7860, stage0_mean_ious: 0.1023, stage0_s: 0.0000, stage0_m: 0.0412, stage0_l: 0.1521, stage0_h: 0.0771, stage1_loss_instance_mil: 0.1398, stage1_bag_acc: 56.6603, stage1_neg_loss: 0.0373, stage1_mean_ious: 0.0973, stage1_s: 0.0000, stage1_m: 0.0396, stage1_l: 0.1510, stage1_h: 0.0711, loss: 0.6348, grad_norm: 1.2063
+2024-10-08 23:44:50,397 - mmdet - INFO - Epoch [12][250/360]	lr: 1.000e-03, eta: 0:22:29, time: 0.597, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.4861, stage0_bag_acc: 51.0203, stage0_mean_ious: 0.1005, stage0_s: 0.0000, stage0_m: 0.0524, stage0_l: 0.1347, stage0_h: 0.0751, stage1_loss_instance_mil: 0.1404, stage1_bag_acc: 54.9909, stage1_neg_loss: 0.0348, stage1_mean_ious: 0.0932, stage1_s: 0.0000, stage1_m: 0.0481, stage1_l: 0.1303, stage1_h: 0.0682, loss: 0.6613, grad_norm: 1.2929
+2024-10-08 23:45:20,726 - mmdet - INFO - Epoch [12][300/360]	lr: 1.000e-03, eta: 0:21:59, time: 0.607, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4475, stage0_bag_acc: 56.1682, stage0_mean_ious: 0.1051, stage0_s: 0.0000, stage0_m: 0.0494, stage0_l: 0.1883, stage0_h: 0.0757, stage1_loss_instance_mil: 0.1404, stage1_bag_acc: 60.2487, stage1_neg_loss: 0.0366, stage1_mean_ious: 0.0986, stage1_s: 0.0000, stage1_m: 0.0448, stage1_l: 0.1757, stage1_h: 0.0716, loss: 0.6245, grad_norm: 1.3553
+2024-10-08 23:45:50,292 - mmdet - INFO - Epoch [12][350/360]	lr: 1.000e-03, eta: 0:21:30, time: 0.591, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4539, stage0_bag_acc: 50.7613, stage0_mean_ious: 0.1053, stage0_s: 0.0000, stage0_m: 0.0387, stage0_l: 0.1380, stage0_h: 0.0818, stage1_loss_instance_mil: 0.1411, stage1_bag_acc: 60.2214, stage1_neg_loss: 0.0412, stage1_mean_ious: 0.1018, stage1_s: 0.0000, stage1_m: 0.0334, stage1_l: 0.1394, stage1_h: 0.0784, loss: 0.6362, grad_norm: 1.5021
+2024-10-08 23:45:56,977 - mmdet - INFO - Saving checkpoint at 12 epochs
+2024-10-08 23:47:32,924 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:47:33,704 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0623
+2024-10-08 23:47:33,704 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2365
+2024-10-08 23:47:33,704 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1004
+2024-10-08 23:47:33,704 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0380
+2024-10-08 23:47:33,704 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0191
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0064
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0001
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0100
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1738
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1640
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1641
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4462
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1641
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1641
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0755
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1706
+2024-10-08 23:47:33,705 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1623
+2024-10-08 23:47:33,716 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:47:33,717 - mmdet - INFO - Epoch(val) [12][360]	eval_iter_num: 720, bbox_mAP: 0.0620, bbox_mAP_50: 0.2360, bbox_mAP_75: 0.1000, bbox_mAP_s: 0.0380, bbox_mAP_m: 0.0190, bbox_mAP_l: 0.0060, bbox_mAP_copypaste: 0.062 0.236 0.100 0.038 0.019 0.006
+2024-10-08 23:48:05,661 - mmdet - INFO - Epoch [13][50/360]	lr: 1.000e-03, eta: 0:20:52, time: 0.639, data_time: 0.058, memory: 8677, stage0_loss_instance_mil: 0.4543, stage0_bag_acc: 50.2354, stage0_mean_ious: 0.1017, stage0_s: 0.0000, stage0_m: 0.0322, stage0_l: 0.1416, stage0_h: 0.0712, stage1_loss_instance_mil: 0.1389, stage1_bag_acc: 56.9330, stage1_neg_loss: 0.0383, stage1_mean_ious: 0.0983, stage1_s: 0.0000, stage1_m: 0.0311, stage1_l: 0.1454, stage1_h: 0.0681, loss: 0.6315, grad_norm: 1.4731
+2024-10-08 23:48:35,734 - mmdet - INFO - Epoch [13][100/360]	lr: 1.000e-03, eta: 0:20:23, time: 0.601, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.4532, stage0_bag_acc: 53.6048, stage0_mean_ious: 0.1170, stage0_s: 0.0000, stage0_m: 0.0439, stage0_l: 0.2024, stage0_h: 0.0837, stage1_loss_instance_mil: 0.1411, stage1_bag_acc: 57.7989, stage1_neg_loss: 0.0404, stage1_mean_ious: 0.1112, stage1_s: 0.0000, stage1_m: 0.0425, stage1_l: 0.1938, stage1_h: 0.0777, loss: 0.6347, grad_norm: 1.4139
+2024-10-08 23:49:05,143 - mmdet - INFO - Epoch [13][150/360]	lr: 1.000e-03, eta: 0:19:53, time: 0.588, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.4689, stage0_bag_acc: 52.5551, stage0_mean_ious: 0.1011, stage0_s: 0.0000, stage0_m: 0.0125, stage0_l: 0.1511, stage0_h: 0.0768, stage1_loss_instance_mil: 0.1380, stage1_bag_acc: 55.5876, stage1_neg_loss: 0.0418, stage1_mean_ious: 0.0965, stage1_s: 0.0000, stage1_m: 0.0158, stage1_l: 0.1415, stage1_h: 0.0737, loss: 0.6488, grad_norm: 1.4514
+2024-10-08 23:49:35,604 - mmdet - INFO - Epoch [13][200/360]	lr: 1.000e-03, eta: 0:19:23, time: 0.609, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.4905, stage0_bag_acc: 49.9292, stage0_mean_ious: 0.0985, stage0_s: 0.0000, stage0_m: 0.0047, stage0_l: 0.1452, stage0_h: 0.0796, stage1_loss_instance_mil: 0.1408, stage1_bag_acc: 51.2987, stage1_neg_loss: 0.0344, stage1_mean_ious: 0.0905, stage1_s: 0.0000, stage1_m: 0.0053, stage1_l: 0.1300, stage1_h: 0.0744, loss: 0.6657, grad_norm: 1.4918
+2024-10-08 23:50:05,938 - mmdet - INFO - Epoch [13][250/360]	lr: 1.000e-03, eta: 0:18:54, time: 0.607, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.4574, stage0_bag_acc: 54.3479, stage0_mean_ious: 0.1133, stage0_s: 0.0000, stage0_m: 0.0642, stage0_l: 0.2008, stage0_h: 0.0782, stage1_loss_instance_mil: 0.1404, stage1_bag_acc: 60.0926, stage1_neg_loss: 0.0339, stage1_mean_ious: 0.1062, stage1_s: 0.0000, stage1_m: 0.0549, stage1_l: 0.1923, stage1_h: 0.0724, loss: 0.6317, grad_norm: 1.4327
+2024-10-08 23:50:35,796 - mmdet - INFO - Epoch [13][300/360]	lr: 1.000e-03, eta: 0:18:24, time: 0.597, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.4681, stage0_bag_acc: 52.2504, stage0_mean_ious: 0.1054, stage0_s: 0.0000, stage0_m: 0.0227, stage0_l: 0.1857, stage0_h: 0.0749, stage1_loss_instance_mil: 0.1368, stage1_bag_acc: 58.2474, stage1_neg_loss: 0.0424, stage1_mean_ious: 0.1001, stage1_s: 0.0000, stage1_m: 0.0212, stage1_l: 0.1854, stage1_h: 0.0701, loss: 0.6473, grad_norm: 1.5959
+2024-10-08 23:51:05,288 - mmdet - INFO - Epoch [13][350/360]	lr: 1.000e-03, eta: 0:17:55, time: 0.590, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4412, stage0_bag_acc: 55.3562, stage0_mean_ious: 0.1042, stage0_s: 0.0000, stage0_m: 0.0623, stage0_l: 0.1675, stage0_h: 0.0749, stage1_loss_instance_mil: 0.1414, stage1_bag_acc: 59.5234, stage1_neg_loss: 0.0367, stage1_mean_ious: 0.0977, stage1_s: 0.0000, stage1_m: 0.0604, stage1_l: 0.1527, stage1_h: 0.0704, loss: 0.6193, grad_norm: 1.4173
+2024-10-08 23:51:10,917 - mmdet - INFO - Saving checkpoint at 13 epochs
+2024-10-08 23:52:48,976 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:52:49,733 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0626
+2024-10-08 23:52:49,733 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2422
+2024-10-08 23:52:49,733 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1014
+2024-10-08 23:52:49,733 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0372
+2024-10-08 23:52:49,733 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0173
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0049
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0125
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1672
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1700
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1630
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4539
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1630
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1630
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1021
+2024-10-08 23:52:49,734 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1648
+2024-10-08 23:52:49,735 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1677
+2024-10-08 23:52:49,744 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:52:49,744 - mmdet - INFO - Epoch(val) [13][360]	eval_iter_num: 720, bbox_mAP: 0.0630, bbox_mAP_50: 0.2420, bbox_mAP_75: 0.1010, bbox_mAP_s: 0.0370, bbox_mAP_m: 0.0170, bbox_mAP_l: 0.0050, bbox_mAP_copypaste: 0.063 0.242 0.101 0.037 0.017 0.005
+2024-10-08 23:53:22,460 - mmdet - INFO - Epoch [14][50/360]	lr: 1.000e-03, eta: 0:17:18, time: 0.654, data_time: 0.058, memory: 8677, stage0_loss_instance_mil: 0.4636, stage0_bag_acc: 52.7928, stage0_mean_ious: 0.1088, stage0_s: 0.0000, stage0_m: 0.0919, stage0_l: 0.1405, stage0_h: 0.0800, stage1_loss_instance_mil: 0.1379, stage1_bag_acc: 55.3674, stage1_neg_loss: 0.0387, stage1_mean_ious: 0.1037, stage1_s: 0.0000, stage1_m: 0.0888, stage1_l: 0.1355, stage1_h: 0.0746, loss: 0.6402, grad_norm: 1.6549
+2024-10-08 23:53:52,791 - mmdet - INFO - Epoch [14][100/360]	lr: 1.000e-03, eta: 0:16:48, time: 0.607, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.4543, stage0_bag_acc: 50.3233, stage0_mean_ious: 0.1141, stage0_s: 0.0000, stage0_m: 0.0718, stage0_l: 0.1701, stage0_h: 0.0812, stage1_loss_instance_mil: 0.1444, stage1_bag_acc: 57.4480, stage1_neg_loss: 0.0371, stage1_mean_ious: 0.1109, stage1_s: 0.0000, stage1_m: 0.0780, stage1_l: 0.1660, stage1_h: 0.0779, loss: 0.6358, grad_norm: 1.5244
+2024-10-08 23:54:22,752 - mmdet - INFO - Epoch [14][150/360]	lr: 1.000e-03, eta: 0:16:19, time: 0.599, data_time: 0.011, memory: 8677, stage0_loss_instance_mil: 0.4613, stage0_bag_acc: 52.5953, stage0_mean_ious: 0.1056, stage0_s: 0.0000, stage0_m: 0.0370, stage0_l: 0.1175, stage0_h: 0.0794, stage1_loss_instance_mil: 0.1365, stage1_bag_acc: 59.4660, stage1_neg_loss: 0.0406, stage1_mean_ious: 0.0988, stage1_s: 0.0000, stage1_m: 0.0354, stage1_l: 0.1105, stage1_h: 0.0745, loss: 0.6383, grad_norm: 1.7407
+2024-10-08 23:54:52,740 - mmdet - INFO - Epoch [14][200/360]	lr: 1.000e-03, eta: 0:15:49, time: 0.600, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.4658, stage0_bag_acc: 49.5582, stage0_mean_ious: 0.1125, stage0_s: 0.0000, stage0_m: 0.0697, stage0_l: 0.1662, stage0_h: 0.0741, stage1_loss_instance_mil: 0.1429, stage1_bag_acc: 57.5961, stage1_neg_loss: 0.0345, stage1_mean_ious: 0.1063, stage1_s: 0.0000, stage1_m: 0.0696, stage1_l: 0.1563, stage1_h: 0.0693, loss: 0.6431, grad_norm: 1.5464
+2024-10-08 23:55:22,676 - mmdet - INFO - Epoch [14][250/360]	lr: 1.000e-03, eta: 0:15:20, time: 0.599, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4520, stage0_bag_acc: 52.6849, stage0_mean_ious: 0.1052, stage0_s: 0.0000, stage0_m: 0.0558, stage0_l: 0.1882, stage0_h: 0.0746, stage1_loss_instance_mil: 0.1409, stage1_bag_acc: 60.1920, stage1_neg_loss: 0.0422, stage1_mean_ious: 0.1006, stage1_s: 0.0000, stage1_m: 0.0526, stage1_l: 0.1858, stage1_h: 0.0706, loss: 0.6350, grad_norm: 1.6033
+2024-10-08 23:55:53,639 - mmdet - INFO - Epoch [14][300/360]	lr: 1.000e-03, eta: 0:14:50, time: 0.619, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.4539, stage0_bag_acc: 52.8687, stage0_mean_ious: 0.1063, stage0_s: 0.0000, stage0_m: 0.0453, stage0_l: 0.1697, stage0_h: 0.0753, stage1_loss_instance_mil: 0.1499, stage1_bag_acc: 59.6878, stage1_neg_loss: 0.0345, stage1_mean_ious: 0.1027, stage1_s: 0.0000, stage1_m: 0.0507, stage1_l: 0.1593, stage1_h: 0.0717, loss: 0.6383, grad_norm: 1.7846
+2024-10-08 23:56:23,229 - mmdet - INFO - Epoch [14][350/360]	lr: 1.000e-03, eta: 0:14:21, time: 0.592, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4231, stage0_bag_acc: 56.4380, stage0_mean_ious: 0.1056, stage0_s: 0.0000, stage0_m: 0.0204, stage0_l: 0.1681, stage0_h: 0.0784, stage1_loss_instance_mil: 0.1518, stage1_bag_acc: 63.9863, stage1_neg_loss: 0.0444, stage1_mean_ious: 0.0997, stage1_s: 0.0000, stage1_m: 0.0178, stage1_l: 0.1515, stage1_h: 0.0750, loss: 0.6193, grad_norm: 1.5518
+2024-10-08 23:56:29,075 - mmdet - INFO - Saving checkpoint at 14 epochs
+2024-10-08 23:58:04,290 - mmdet - INFO - Evaluating bbox...
+2024-10-08 23:58:05,049 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0644
+2024-10-08 23:58:05,049 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2511
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1043
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0376
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0181
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0047
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0001
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0118
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1703
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1729
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1661
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4595
+2024-10-08 23:58:05,050 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1661
+2024-10-08 23:58:05,051 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1661
+2024-10-08 23:58:05,051 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1012
+2024-10-08 23:58:05,051 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1676
+2024-10-08 23:58:05,051 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1702
+2024-10-08 23:58:05,060 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-08 23:58:05,060 - mmdet - INFO - Epoch(val) [14][360]	eval_iter_num: 720, bbox_mAP: 0.0640, bbox_mAP_50: 0.2510, bbox_mAP_75: 0.1040, bbox_mAP_s: 0.0380, bbox_mAP_m: 0.0180, bbox_mAP_l: 0.0050, bbox_mAP_copypaste: 0.064 0.251 0.104 0.038 0.018 0.005
+2024-10-08 23:58:37,793 - mmdet - INFO - Epoch [15][50/360]	lr: 1.000e-03, eta: 0:13:44, time: 0.654, data_time: 0.060, memory: 8677, stage0_loss_instance_mil: 0.4754, stage0_bag_acc: 49.7425, stage0_mean_ious: 0.1082, stage0_s: 0.0000, stage0_m: 0.0360, stage0_l: 0.2393, stage0_h: 0.0745, stage1_loss_instance_mil: 0.1414, stage1_bag_acc: 57.2331, stage1_neg_loss: 0.0369, stage1_mean_ious: 0.1008, stage1_s: 0.0000, stage1_m: 0.0403, stage1_l: 0.2154, stage1_h: 0.0702, loss: 0.6537, grad_norm: 1.7771
+2024-10-08 23:59:08,763 - mmdet - INFO - Epoch [15][100/360]	lr: 1.000e-03, eta: 0:13:15, time: 0.619, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.4781, stage0_bag_acc: 46.0430, stage0_mean_ious: 0.1152, stage0_s: 0.0000, stage0_m: 0.0500, stage0_l: 0.1893, stage0_h: 0.0816, stage1_loss_instance_mil: 0.1368, stage1_bag_acc: 53.2472, stage1_neg_loss: 0.0389, stage1_mean_ious: 0.1072, stage1_s: 0.0000, stage1_m: 0.0452, stage1_l: 0.1714, stage1_h: 0.0768, loss: 0.6538, grad_norm: 1.7214
+2024-10-08 23:59:39,157 - mmdet - INFO - Epoch [15][150/360]	lr: 1.000e-03, eta: 0:12:45, time: 0.608, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.4316, stage0_bag_acc: 55.8945, stage0_mean_ious: 0.0961, stage0_s: 0.0000, stage0_m: 0.0477, stage0_l: 0.1417, stage0_h: 0.0751, stage1_loss_instance_mil: 0.1448, stage1_bag_acc: 64.4893, stage1_neg_loss: 0.0375, stage1_mean_ious: 0.0920, stage1_s: 0.0000, stage1_m: 0.0477, stage1_l: 0.1273, stage1_h: 0.0722, loss: 0.6139, grad_norm: 1.6749
+2024-10-09 00:00:09,003 - mmdet - INFO - Epoch [15][200/360]	lr: 1.000e-03, eta: 0:12:16, time: 0.597, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.4313, stage0_bag_acc: 56.1812, stage0_mean_ious: 0.1136, stage0_s: 0.0000, stage0_m: 0.0367, stage0_l: 0.1900, stage0_h: 0.0808, stage1_loss_instance_mil: 0.1410, stage1_bag_acc: 62.4312, stage1_neg_loss: 0.0435, stage1_mean_ious: 0.1067, stage1_s: 0.0000, stage1_m: 0.0291, stage1_l: 0.1788, stage1_h: 0.0763, loss: 0.6157, grad_norm: 1.6936
+2024-10-09 00:00:38,382 - mmdet - INFO - Epoch [15][250/360]	lr: 1.000e-03, eta: 0:11:46, time: 0.588, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4553, stage0_bag_acc: 53.5740, stage0_mean_ious: 0.1071, stage0_s: 0.0000, stage0_m: 0.0234, stage0_l: 0.1705, stage0_h: 0.0795, stage1_loss_instance_mil: 0.1399, stage1_bag_acc: 61.2599, stage1_neg_loss: 0.0398, stage1_mean_ious: 0.1035, stage1_s: 0.0000, stage1_m: 0.0254, stage1_l: 0.1715, stage1_h: 0.0763, loss: 0.6351, grad_norm: 1.7461
+2024-10-09 00:01:09,521 - mmdet - INFO - Epoch [15][300/360]	lr: 1.000e-03, eta: 0:11:17, time: 0.623, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4233, stage0_bag_acc: 56.8740, stage0_mean_ious: 0.1028, stage0_s: 0.0000, stage0_m: 0.0333, stage0_l: 0.1392, stage0_h: 0.0802, stage1_loss_instance_mil: 0.1448, stage1_bag_acc: 64.6183, stage1_neg_loss: 0.0362, stage1_mean_ious: 0.0982, stage1_s: 0.0000, stage1_m: 0.0368, stage1_l: 0.1339, stage1_h: 0.0757, loss: 0.6044, grad_norm: 1.6823
+2024-10-09 00:01:39,616 - mmdet - INFO - Epoch [15][350/360]	lr: 1.000e-03, eta: 0:10:47, time: 0.602, data_time: 0.012, memory: 8677, stage0_loss_instance_mil: 0.4446, stage0_bag_acc: 49.4384, stage0_mean_ious: 0.1078, stage0_s: 0.0000, stage0_m: 0.0660, stage0_l: 0.1920, stage0_h: 0.0749, stage1_loss_instance_mil: 0.1434, stage1_bag_acc: 57.7446, stage1_neg_loss: 0.0373, stage1_mean_ious: 0.1014, stage1_s: 0.0000, stage1_m: 0.0553, stage1_l: 0.1826, stage1_h: 0.0711, loss: 0.6252, grad_norm: 2.0613
+2024-10-09 00:01:45,409 - mmdet - INFO - Saving checkpoint at 15 epochs
+2024-10-09 00:03:22,653 - mmdet - INFO - Evaluating bbox...
+2024-10-09 00:03:23,411 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0623
+2024-10-09 00:03:23,412 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2417
+2024-10-09 00:03:23,412 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1008
+2024-10-09 00:03:23,412 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0377
+2024-10-09 00:03:23,412 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0172
+2024-10-09 00:03:23,412 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0048
+2024-10-09 00:03:23,412 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-09 00:03:23,412 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0117
+2024-10-09 00:03:23,412 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1705
+2024-10-09 00:03:23,413 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1611
+2024-10-09 00:03:23,413 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1632
+2024-10-09 00:03:23,413 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4518
+2024-10-09 00:03:23,413 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1632
+2024-10-09 00:03:23,413 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1632
+2024-10-09 00:03:23,413 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1009
+2024-10-09 00:03:23,413 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1681
+2024-10-09 00:03:23,413 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1588
+2024-10-09 00:03:23,424 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-09 00:03:23,424 - mmdet - INFO - Epoch(val) [15][360]	eval_iter_num: 720, bbox_mAP: 0.0620, bbox_mAP_50: 0.2420, bbox_mAP_75: 0.1010, bbox_mAP_s: 0.0380, bbox_mAP_m: 0.0170, bbox_mAP_l: 0.0050, bbox_mAP_copypaste: 0.062 0.242 0.101 0.038 0.017 0.005
+2024-10-09 00:03:55,854 - mmdet - INFO - Epoch [16][50/360]	lr: 1.000e-03, eta: 0:10:11, time: 0.648, data_time: 0.060, memory: 8677, stage0_loss_instance_mil: 0.4430, stage0_bag_acc: 54.9888, stage0_mean_ious: 0.1099, stage0_s: 0.0000, stage0_m: 0.0675, stage0_l: 0.1786, stage0_h: 0.0775, stage1_loss_instance_mil: 0.1443, stage1_bag_acc: 57.4659, stage1_neg_loss: 0.0462, stage1_mean_ious: 0.1046, stage1_s: 0.0000, stage1_m: 0.0599, stage1_l: 0.1663, stage1_h: 0.0744, loss: 0.6335, grad_norm: 1.9329
+2024-10-09 00:04:27,657 - mmdet - INFO - Epoch [16][100/360]	lr: 1.000e-03, eta: 0:09:41, time: 0.636, data_time: 0.015, memory: 8677, stage0_loss_instance_mil: 0.4542, stage0_bag_acc: 53.8551, stage0_mean_ious: 0.1161, stage0_s: 0.0000, stage0_m: 0.0413, stage0_l: 0.2102, stage0_h: 0.0798, stage1_loss_instance_mil: 0.1474, stage1_bag_acc: 59.3143, stage1_neg_loss: 0.0341, stage1_mean_ious: 0.1083, stage1_s: 0.0000, stage1_m: 0.0363, stage1_l: 0.1911, stage1_h: 0.0748, loss: 0.6357, grad_norm: 2.0076
+2024-10-09 00:04:58,450 - mmdet - INFO - Epoch [16][150/360]	lr: 1.000e-03, eta: 0:09:12, time: 0.616, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.4529, stage0_bag_acc: 51.5819, stage0_mean_ious: 0.1074, stage0_s: 0.0000, stage0_m: 0.0437, stage0_l: 0.1964, stage0_h: 0.0751, stage1_loss_instance_mil: 0.1414, stage1_bag_acc: 58.0129, stage1_neg_loss: 0.0357, stage1_mean_ious: 0.1038, stage1_s: 0.0000, stage1_m: 0.0425, stage1_l: 0.1915, stage1_h: 0.0715, loss: 0.6301, grad_norm: 2.0305
+2024-10-09 00:05:29,875 - mmdet - INFO - Epoch [16][200/360]	lr: 1.000e-03, eta: 0:08:43, time: 0.628, data_time: 0.016, memory: 8677, stage0_loss_instance_mil: 0.4263, stage0_bag_acc: 55.5314, stage0_mean_ious: 0.1170, stage0_s: 0.0000, stage0_m: 0.0402, stage0_l: 0.1944, stage0_h: 0.0819, stage1_loss_instance_mil: 0.1467, stage1_bag_acc: 62.8743, stage1_neg_loss: 0.0473, stage1_mean_ious: 0.1131, stage1_s: 0.0000, stage1_m: 0.0389, stage1_l: 0.1862, stage1_h: 0.0794, loss: 0.6203, grad_norm: 2.2316
+2024-10-09 00:06:00,930 - mmdet - INFO - Epoch [16][250/360]	lr: 1.000e-03, eta: 0:08:13, time: 0.621, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.4265, stage0_bag_acc: 57.2259, stage0_mean_ious: 0.1123, stage0_s: 0.0000, stage0_m: 0.0527, stage0_l: 0.1951, stage0_h: 0.0816, stage1_loss_instance_mil: 0.1461, stage1_bag_acc: 65.3805, stage1_neg_loss: 0.0377, stage1_mean_ious: 0.1084, stage1_s: 0.0000, stage1_m: 0.0572, stage1_l: 0.1817, stage1_h: 0.0791, loss: 0.6103, grad_norm: 1.7012
+2024-10-09 00:06:31,842 - mmdet - INFO - Epoch [16][300/360]	lr: 1.000e-03, eta: 0:07:43, time: 0.618, data_time: 0.015, memory: 8677, stage0_loss_instance_mil: 0.4135, stage0_bag_acc: 57.7958, stage0_mean_ious: 0.0915, stage0_s: 0.0000, stage0_m: 0.0479, stage0_l: 0.1503, stage0_h: 0.0699, stage1_loss_instance_mil: 0.1342, stage1_bag_acc: 66.9270, stage1_neg_loss: 0.0488, stage1_mean_ious: 0.0876, stage1_s: 0.0000, stage1_m: 0.0429, stage1_l: 0.1502, stage1_h: 0.0658, loss: 0.5966, grad_norm: 1.9877
+2024-10-09 00:07:01,325 - mmdet - INFO - Epoch [16][350/360]	lr: 1.000e-03, eta: 0:07:14, time: 0.590, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.4540, stage0_bag_acc: 54.4718, stage0_mean_ious: 0.1098, stage0_s: 0.0000, stage0_m: 0.0445, stage0_l: 0.1358, stage0_h: 0.0800, stage1_loss_instance_mil: 0.1472, stage1_bag_acc: 60.9789, stage1_neg_loss: 0.0332, stage1_mean_ious: 0.1018, stage1_s: 0.0000, stage1_m: 0.0373, stage1_l: 0.1252, stage1_h: 0.0748, loss: 0.6344, grad_norm: 1.8867
+2024-10-09 00:07:07,912 - mmdet - INFO - Saving checkpoint at 16 epochs
+2024-10-09 00:08:47,993 - mmdet - INFO - Evaluating bbox...
+2024-10-09 00:08:48,893 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0665
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2545
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1101
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0402
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0211
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0057
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0002
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0114
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1733
+2024-10-09 00:08:48,894 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1624
+2024-10-09 00:08:48,895 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1708
+2024-10-09 00:08:48,895 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4605
+2024-10-09 00:08:48,895 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1708
+2024-10-09 00:08:48,895 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1708
+2024-10-09 00:08:48,895 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0945
+2024-10-09 00:08:48,895 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1710
+2024-10-09 00:08:48,895 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1607
+2024-10-09 00:08:48,912 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-09 00:08:48,912 - mmdet - INFO - Epoch(val) [16][360]	eval_iter_num: 720, bbox_mAP: 0.0660, bbox_mAP_50: 0.2550, bbox_mAP_75: 0.1100, bbox_mAP_s: 0.0400, bbox_mAP_m: 0.0210, bbox_mAP_l: 0.0060, bbox_mAP_copypaste: 0.066 0.255 0.110 0.040 0.021 0.006
+2024-10-09 00:09:23,036 - mmdet - INFO - Epoch [17][50/360]	lr: 1.000e-03, eta: 0:06:38, time: 0.682, data_time: 0.059, memory: 8677, stage0_loss_instance_mil: 0.4340, stage0_bag_acc: 55.3574, stage0_mean_ious: 0.0961, stage0_s: 0.0000, stage0_m: 0.0523, stage0_l: 0.1378, stage0_h: 0.0713, stage1_loss_instance_mil: 0.1381, stage1_bag_acc: 64.3064, stage1_neg_loss: 0.0415, stage1_mean_ious: 0.0899, stage1_s: 0.0000, stage1_m: 0.0527, stage1_l: 0.1337, stage1_h: 0.0664, loss: 0.6136, grad_norm: 2.0517
+2024-10-09 00:09:52,493 - mmdet - INFO - Epoch [17][100/360]	lr: 1.000e-03, eta: 0:06:08, time: 0.589, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.4234, stage0_bag_acc: 56.9205, stage0_mean_ious: 0.1126, stage0_s: 0.0000, stage0_m: 0.0347, stage0_l: 0.1745, stage0_h: 0.0796, stage1_loss_instance_mil: 0.1464, stage1_bag_acc: 62.4672, stage1_neg_loss: 0.0482, stage1_mean_ious: 0.1057, stage1_s: 0.0000, stage1_m: 0.0292, stage1_l: 0.1640, stage1_h: 0.0753, loss: 0.6180, grad_norm: 2.2233
+2024-10-09 00:10:22,585 - mmdet - INFO - Epoch [17][150/360]	lr: 1.000e-03, eta: 0:05:38, time: 0.602, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.4153, stage0_bag_acc: 59.5576, stage0_mean_ious: 0.0993, stage0_s: 0.0000, stage0_m: 0.0299, stage0_l: 0.1379, stage0_h: 0.0755, stage1_loss_instance_mil: 0.1493, stage1_bag_acc: 65.5951, stage1_neg_loss: 0.0403, stage1_mean_ious: 0.0918, stage1_s: 0.0000, stage1_m: 0.0247, stage1_l: 0.1266, stage1_h: 0.0701, loss: 0.6049, grad_norm: 2.0140
+2024-10-09 00:10:53,552 - mmdet - INFO - Epoch [17][200/360]	lr: 1.000e-03, eta: 0:05:09, time: 0.619, data_time: 0.015, memory: 8677, stage0_loss_instance_mil: 0.3951, stage0_bag_acc: 57.1853, stage0_mean_ious: 0.0995, stage0_s: 0.0000, stage0_m: 0.0201, stage0_l: 0.1781, stage0_h: 0.0783, stage1_loss_instance_mil: 0.1492, stage1_bag_acc: 63.4031, stage1_neg_loss: 0.0465, stage1_mean_ious: 0.0931, stage1_s: 0.0000, stage1_m: 0.0160, stage1_l: 0.1619, stage1_h: 0.0742, loss: 0.5909, grad_norm: 1.9350
+2024-10-09 00:11:27,175 - mmdet - INFO - Epoch [17][250/360]	lr: 1.000e-03, eta: 0:04:39, time: 0.672, data_time: 0.018, memory: 8677, stage0_loss_instance_mil: 0.4426, stage0_bag_acc: 52.2756, stage0_mean_ious: 0.1063, stage0_s: 0.0000, stage0_m: 0.0486, stage0_l: 0.1676, stage0_h: 0.0802, stage1_loss_instance_mil: 0.1468, stage1_bag_acc: 59.3426, stage1_neg_loss: 0.0340, stage1_mean_ious: 0.0997, stage1_s: 0.0000, stage1_m: 0.0392, stage1_l: 0.1626, stage1_h: 0.0751, loss: 0.6234, grad_norm: 1.9811
+2024-10-09 00:12:06,630 - mmdet - INFO - Epoch [17][300/360]	lr: 1.000e-03, eta: 0:04:10, time: 0.789, data_time: 0.023, memory: 8677, stage0_loss_instance_mil: 0.4545, stage0_bag_acc: 52.7661, stage0_mean_ious: 0.1076, stage0_s: 0.0000, stage0_m: 0.0391, stage0_l: 0.1885, stage0_h: 0.0824, stage1_loss_instance_mil: 0.1390, stage1_bag_acc: 62.2649, stage1_neg_loss: 0.0368, stage1_mean_ious: 0.1030, stage1_s: 0.0000, stage1_m: 0.0377, stage1_l: 0.1896, stage1_h: 0.0770, loss: 0.6302, grad_norm: 2.4021
+2024-10-09 00:12:38,591 - mmdet - INFO - Epoch [17][350/360]	lr: 1.000e-03, eta: 0:03:40, time: 0.639, data_time: 0.018, memory: 8677, stage0_loss_instance_mil: 0.4050, stage0_bag_acc: 62.1568, stage0_mean_ious: 0.1259, stage0_s: 0.0000, stage0_m: 0.0546, stage0_l: 0.2351, stage0_h: 0.0855, stage1_loss_instance_mil: 0.1418, stage1_bag_acc: 65.0845, stage1_neg_loss: 0.0423, stage1_mean_ious: 0.1205, stage1_s: 0.0000, stage1_m: 0.0552, stage1_l: 0.2176, stage1_h: 0.0827, loss: 0.5891, grad_norm: 1.9125
+2024-10-09 00:12:45,086 - mmdet - INFO - Saving checkpoint at 17 epochs
+2024-10-09 00:14:24,661 - mmdet - INFO - Evaluating bbox...
+2024-10-09 00:14:25,474 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0694
+2024-10-09 00:14:25,474 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2587
+2024-10-09 00:14:25,474 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1153
+2024-10-09 00:14:25,474 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0431
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0183
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0045
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0001
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0136
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1751
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1655
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1707
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4600
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1707
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1707
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1020
+2024-10-09 00:14:25,475 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1722
+2024-10-09 00:14:25,476 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1634
+2024-10-09 00:14:25,487 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-09 00:14:25,487 - mmdet - INFO - Epoch(val) [17][360]	eval_iter_num: 720, bbox_mAP: 0.0690, bbox_mAP_50: 0.2590, bbox_mAP_75: 0.1150, bbox_mAP_s: 0.0430, bbox_mAP_m: 0.0180, bbox_mAP_l: 0.0050, bbox_mAP_copypaste: 0.069 0.259 0.115 0.043 0.018 0.005
+2024-10-09 00:14:59,062 - mmdet - INFO - Epoch [18][50/360]	lr: 1.000e-03, eta: 0:03:05, time: 0.671, data_time: 0.059, memory: 8677, stage0_loss_instance_mil: 0.4234, stage0_bag_acc: 57.3015, stage0_mean_ious: 0.1084, stage0_s: 0.0000, stage0_m: 0.0362, stage0_l: 0.1455, stage0_h: 0.0818, stage1_loss_instance_mil: 0.1425, stage1_bag_acc: 65.3919, stage1_neg_loss: 0.0391, stage1_mean_ious: 0.1026, stage1_s: 0.0000, stage1_m: 0.0446, stage1_l: 0.1374, stage1_h: 0.0765, loss: 0.6050, grad_norm: 2.2363
+2024-10-09 00:15:29,839 - mmdet - INFO - Epoch [18][100/360]	lr: 1.000e-03, eta: 0:02:35, time: 0.616, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.4339, stage0_bag_acc: 58.6714, stage0_mean_ious: 0.1045, stage0_s: 0.0000, stage0_m: 0.0412, stage0_l: 0.1655, stage0_h: 0.0783, stage1_loss_instance_mil: 0.1431, stage1_bag_acc: 65.5500, stage1_neg_loss: 0.0411, stage1_mean_ious: 0.0975, stage1_s: 0.0000, stage1_m: 0.0416, stage1_l: 0.1495, stage1_h: 0.0719, loss: 0.6181, grad_norm: 2.5431
+2024-10-09 00:16:06,994 - mmdet - INFO - Epoch [18][150/360]	lr: 1.000e-03, eta: 0:02:05, time: 0.743, data_time: 0.024, memory: 8677, stage0_loss_instance_mil: 0.4145, stage0_bag_acc: 57.4746, stage0_mean_ious: 0.1182, stage0_s: 0.0000, stage0_m: 0.0167, stage0_l: 0.1891, stage0_h: 0.0919, stage1_loss_instance_mil: 0.1365, stage1_bag_acc: 59.6953, stage1_neg_loss: 0.0417, stage1_mean_ious: 0.1068, stage1_s: 0.0000, stage1_m: 0.0141, stage1_l: 0.1642, stage1_h: 0.0838, loss: 0.5927, grad_norm: 2.2700
+2024-10-09 00:16:47,598 - mmdet - INFO - Epoch [18][200/360]	lr: 1.000e-03, eta: 0:01:35, time: 0.812, data_time: 0.027, memory: 8677, stage0_loss_instance_mil: 0.4268, stage0_bag_acc: 55.7970, stage0_mean_ious: 0.1057, stage0_s: 0.0093, stage0_m: 0.0353, stage0_l: 0.1489, stage0_h: 0.0740, stage1_loss_instance_mil: 0.1370, stage1_bag_acc: 62.9408, stage1_neg_loss: 0.0424, stage1_mean_ious: 0.0987, stage1_s: 0.0079, stage1_m: 0.0303, stage1_l: 0.1378, stage1_h: 0.0707, loss: 0.6061, grad_norm: 2.2044
+2024-10-09 00:17:26,668 - mmdet - INFO - Epoch [18][250/360]	lr: 1.000e-03, eta: 0:01:06, time: 0.781, data_time: 0.030, memory: 8677, stage0_loss_instance_mil: 0.4013, stage0_bag_acc: 61.5281, stage0_mean_ious: 0.1093, stage0_s: 0.0000, stage0_m: 0.0580, stage0_l: 0.1425, stage0_h: 0.0797, stage1_loss_instance_mil: 0.1503, stage1_bag_acc: 69.5228, stage1_neg_loss: 0.0462, stage1_mean_ious: 0.1020, stage1_s: 0.0000, stage1_m: 0.0546, stage1_l: 0.1347, stage1_h: 0.0735, loss: 0.5979, grad_norm: 2.5602
+2024-10-09 00:18:04,862 - mmdet - INFO - Epoch [18][300/360]	lr: 1.000e-03, eta: 0:00:36, time: 0.764, data_time: 0.025, memory: 8677, stage0_loss_instance_mil: 0.3920, stage0_bag_acc: 61.3621, stage0_mean_ious: 0.1021, stage0_s: 0.0000, stage0_m: 0.0327, stage0_l: 0.1596, stage0_h: 0.0753, stage1_loss_instance_mil: 0.1415, stage1_bag_acc: 69.0623, stage1_neg_loss: 0.0473, stage1_mean_ious: 0.0984, stage1_s: 0.0000, stage1_m: 0.0382, stage1_l: 0.1479, stage1_h: 0.0728, loss: 0.5807, grad_norm: 2.8155
+2024-10-09 00:18:35,661 - mmdet - INFO - Epoch [18][350/360]	lr: 1.000e-03, eta: 0:00:06, time: 0.616, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.3989, stage0_bag_acc: 54.8620, stage0_mean_ious: 0.1008, stage0_s: 0.0000, stage0_m: 0.0159, stage0_l: 0.1485, stage0_h: 0.0782, stage1_loss_instance_mil: 0.1421, stage1_bag_acc: 60.0663, stage1_neg_loss: 0.0429, stage1_mean_ious: 0.0940, stage1_s: 0.0000, stage1_m: 0.0128, stage1_l: 0.1445, stage1_h: 0.0720, loss: 0.5839, grad_norm: 2.4385
+2024-10-09 00:18:41,279 - mmdet - INFO - Saving checkpoint at 18 epochs
+2024-10-09 00:20:21,043 - mmdet - INFO - Evaluating bbox...
+2024-10-09 00:20:21,929 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0655
+2024-10-09 00:20:21,929 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2475
+2024-10-09 00:20:21,929 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1080
+2024-10-09 00:20:21,929 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0405
+2024-10-09 00:20:21,929 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0179
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0046
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0003
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0118
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1710
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1550
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1647
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4509
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1647
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1647
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1006
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1687
+2024-10-09 00:20:21,930 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1530
+2024-10-09 00:20:21,942 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-09 00:20:21,942 - mmdet - INFO - Epoch(val) [18][360]	eval_iter_num: 720, bbox_mAP: 0.0660, bbox_mAP_50: 0.2480, bbox_mAP_75: 0.1080, bbox_mAP_s: 0.0400, bbox_mAP_m: 0.0180, bbox_mAP_l: 0.0050, bbox_mAP_copypaste: 0.066 0.248 0.108 0.040 0.018 0.005
+2024-10-09 00:22:01,350 - mmdet - INFO - Evaluating bbox...
+2024-10-09 00:22:02,183 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0655
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.2475
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.1080
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0405
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0179
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0046
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0003
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0118
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1710
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1550
+2024-10-09 00:22:02,184 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.1647
+2024-10-09 00:22:02,185 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.4509
+2024-10-09 00:22:02,185 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.1647
+2024-10-09 00:22:02,185 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.1647
+2024-10-09 00:22:02,185 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.1006
+2024-10-09 00:22:02,185 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.1687
+2024-10-09 00:22:02,185 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.1530
+2024-10-09 00:22:03,330 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.7.16 (default, Jan 17 2023, 22:20:44) [GCC 11.2.0]
+CUDA available: True
+GPU 0,1,2,3,4,5,6,7: NVIDIA GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda-12.0
+NVCC: Build cuda_12.0.r12.0/compiler.31968024_0
+GCC: gcc (Ubuntu 11.4.0-2ubuntu1~18.04) 11.4.0
+PyTorch: 1.7.0
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.4-Product Build 20210904 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.6.0 (Git Hash 5ef631a030a6f73131c77892041042805a06064f)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.0
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.0.3
+  - Magma 2.5.2
+  - Build settings: BLAS=MKL, BUILD_TYPE=Release, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DUSE_VULKAN_WRAPPER -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, USE_CUDA=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.8.0
+OpenCV: 4.8.1
+MMCV: 1.3.3
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.0
+MMDetection: 2.13.0+e1fb402
+------------------------------------------------------------
+
+2024-10-09 00:22:04,196 - mmdet - INFO - Distributed training: False
+2024-10-09 00:22:05,047 - mmdet - INFO - Config:
+checkpoint_config = dict(interval=1)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '../TOV_mmdetection_cache/work_dir/coco/pre_trained/P2B.pth'
+resume_from = None
+workflow = [('train', 1)]
+norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
+debug = False
+num_stages = 2
+model = dict(
+    type='P2BNet',
+    pretrained='torchvision://resnet50',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch'),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=0,
+        add_extra_convs='on_input',
+        num_outs=4,
+        norm_cfg=dict(type='GN', num_groups=32, requires_grad=True)),
+    roi_head=dict(
+        type='P2BHead',
+        num_stages=2,
+        top_k=7,
+        with_atten=False,
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=dict(
+            type='Shared2FCInstanceMILHead',
+            num_stages=2,
+            with_loss_pseudo=False,
+            in_channels=256,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=6,
+            num_ref_fcs=0,
+            bbox_coder=dict(
+                type='DeltaXYWHBBoxCoder',
+                target_means=[0.0, 0.0, 0.0, 0.0],
+                target_stds=[0.1, 0.1, 0.2, 0.2]),
+            reg_class_agnostic=True,
+            loss_type='MIL',
+            loss_mil1=dict(
+                type='MILLoss',
+                binary_ins=False,
+                loss_weight=0.25,
+                loss_type='binary_cross_entropy'),
+            loss_mil2=dict(
+                type='MILLoss',
+                binary_ins=False,
+                loss_weight=0.25,
+                loss_type='gfocal_loss'))),
+    train_cfg=dict(
+        base_proposal=dict(
+            base_scales=[4, 8, 16, 32, 64, 128],
+            base_ratios=[
+                0.3333333333333333, 0.5, 0.6666666666666666, 1.0, 1.5, 2.0, 3.0
+            ],
+            shake_ratio=None,
+            cut_mode='symmetry',
+            gen_num_neg=0),
+        fine_proposal=dict(
+            gen_proposal_mode='fix_gen',
+            cut_mode=None,
+            shake_ratio=[0.1],
+            base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
+            iou_thr=0.3,
+            gen_num_neg=500),
+        rcnn=None),
+    test_cfg=dict(rpn=None, rcnn=None))
+dataset_type = 'CocoFmtDataset'
+data_root = 'data/coco/'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='Resize',
+        img_scale=[(2000, 480), (2000, 576), (2000, 688), (2000, 864),
+                   (2000, 1000), (2000, 1200)],
+        multiscale_mode='value',
+        keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(
+        type='Collect',
+        keys=[
+            'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+            'gt_true_bboxes'
+        ])
+]
+test_scale = 1200
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(2000, 1200),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=[
+                    'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+                    'gt_anns_id', 'gt_true_bboxes'
+                ])
+        ])
+]
+data = dict(
+    samples_per_gpu=4,
+    workers_per_gpu=1,
+    shuffle=None,
+    train=dict(
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations_qc_pt/instances_train2017_coarse.json',
+        img_prefix='data/coco/images/train/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='Resize',
+                img_scale=[(2000, 480), (2000, 576), (2000, 688), (2000, 864),
+                           (2000, 1000), (2000, 1200)],
+                multiscale_mode='value',
+                keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=[
+                    'img', 'gt_bboxes', 'gt_labels', 'gt_bboxes_ignore',
+                    'gt_true_bboxes'
+                ])
+        ]),
+    val=dict(
+        samples_per_gpu=2,
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations_qc_pt/instances_train2017_coarse.json',
+        img_prefix='data/coco/images/train/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(2000, 1200),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(
+                        type='Collect',
+                        keys=[
+                            'img', 'gt_bboxes', 'gt_labels',
+                            'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes'
+                        ])
+                ])
+        ],
+        test_mode=False),
+    test=dict(
+        type='CocoFmtDataset',
+        ann_file='data/coco/annotations/instances_val2017.json',
+        img_prefix='data/coco/images/val/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(2000, 1200),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(
+                        type='Collect',
+                        keys=[
+                            'img', 'gt_bboxes', 'gt_labels',
+                            'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes'
+                        ])
+                ])
+        ]))
+check = dict(stop_while_nan=False)
+optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.001)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=18)
+work_dir = '../TOV_mmdetection_cache/work_dir/coco/'
+evaluation = dict(
+    interval=1,
+    metric='bbox',
+    save_result_file=
+    '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result.json',
+    do_first_eval=False,
+    do_final_eval=True)
+gpu_ids = [0]
+
+2024-10-09 00:22:06,092 - mmdet - INFO - load checkpoint from ../TOV_mmdetection_cache/work_dir/coco/pre_trained/P2B.pth
+2024-10-09 00:22:06,093 - mmdet - INFO - Use load_from_local loader
+2024-10-09 00:22:06,386 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for roi_head.bbox_head.fc_cls.0.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([7, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.0.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([7]).
+size mismatch for roi_head.bbox_head.fc_cls.1.weight: copying a param with shape torch.Size([80, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.1.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([6]).
+size mismatch for roi_head.bbox_head.fc_ins.0.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([7, 1024]).
+size mismatch for roi_head.bbox_head.fc_ins.0.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([7]).
+size mismatch for roi_head.bbox_head.fc_ins.1.weight: copying a param with shape torch.Size([80, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_ins.1.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([6]).
+2024-10-09 00:22:06,398 - mmdet - INFO - Start running, host: lxz@user-SYS-4029GP-TRT2, work_dir: /home/lxz/P2BNet/TOV_mmdetection_cache/work_dir/coco
+2024-10-09 00:22:06,398 - mmdet - INFO - workflow: [('train', 1)], max: 18 epochs
+2024-10-09 00:22:39,404 - mmdet - INFO - Epoch [1][50/360]	lr: 9.890e-03, eta: 1:10:44, time: 0.660, data_time: 0.062, memory: 8677, stage0_loss_instance_mil: 0.6240, stage0_bag_acc: 33.4026, stage0_mean_ious: 0.3789, stage0_s: 0.0000, stage0_m: 0.0000, stage0_l: 0.1880, stage0_h: 0.3816, stage1_loss_instance_mil: 0.2154, stage1_bag_acc: 32.1401, stage1_neg_loss: 0.0341, stage1_mean_ious: 0.3648, stage1_s: 0.0000, stage1_m: 0.0000, stage1_l: 0.1763, stage1_h: 0.3694, loss: 0.8735, grad_norm: 5.9695
+2024-10-09 00:23:09,756 - mmdet - INFO - Epoch [1][100/360]	lr: 1.988e-02, eta: 1:07:22, time: 0.607, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6839, stage0_bag_acc: 20.8177, stage0_mean_ious: 0.4257, stage0_s: 0.0000, stage0_m: 0.0167, stage0_l: 0.1632, stage0_h: 0.4419, stage1_loss_instance_mil: 0.1714, stage1_bag_acc: 23.5017, stage1_neg_loss: 0.0144, stage1_mean_ious: 0.4022, stage1_s: 0.0000, stage1_m: 0.0232, stage1_l: 0.1783, stage1_h: 0.4115, loss: 0.8697, grad_norm: 3.5301
+2024-10-09 00:23:40,073 - mmdet - INFO - Epoch [1][150/360]	lr: 2.987e-02, eta: 1:05:52, time: 0.606, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.6878, stage0_bag_acc: 20.0297, stage0_mean_ious: 0.3886, stage0_s: 0.0000, stage0_m: 0.0464, stage0_l: 0.1832, stage0_h: 0.3941, stage1_loss_instance_mil: 0.1560, stage1_bag_acc: 25.1394, stage1_neg_loss: 0.0068, stage1_mean_ious: 0.3721, stage1_s: 0.0000, stage1_m: 0.0479, stage1_l: 0.1865, stage1_h: 0.3749, loss: 0.8507, grad_norm: 0.9164
+2024-10-09 00:24:10,615 - mmdet - INFO - Epoch [1][200/360]	lr: 3.986e-02, eta: 1:05:00, time: 0.611, data_time: 0.015, memory: 8677, stage0_loss_instance_mil: 0.6747, stage0_bag_acc: 23.4008, stage0_mean_ious: 0.3107, stage0_s: 0.0000, stage0_m: 0.0184, stage0_l: 0.1646, stage0_h: 0.3177, stage1_loss_instance_mil: 0.1590, stage1_bag_acc: 26.1093, stage1_neg_loss: 0.0545, stage1_mean_ious: 0.3041, stage1_s: 0.0000, stage1_m: 0.0151, stage1_l: 0.1540, stage1_h: 0.3138, loss: 0.8883, grad_norm: 2.3103
+2024-10-09 00:24:39,814 - mmdet - INFO - Epoch [1][250/360]	lr: 4.985e-02, eta: 1:03:43, time: 0.584, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6900, stage0_bag_acc: 22.2569, stage0_mean_ious: 0.3318, stage0_s: 0.0000, stage0_m: 0.0223, stage0_l: 0.1723, stage0_h: 0.3500, stage1_loss_instance_mil: 0.1388, stage1_bag_acc: 25.7764, stage1_neg_loss: 0.0079, stage1_mean_ious: 0.3108, stage1_s: 0.0000, stage1_m: 0.0186, stage1_l: 0.1521, stage1_h: 0.3302, loss: 0.8367, grad_norm: 0.8335
+2024-10-09 00:25:10,564 - mmdet - INFO - Epoch [1][300/360]	lr: 5.984e-02, eta: 1:03:13, time: 0.615, data_time: 0.014, memory: 8677, stage0_loss_instance_mil: 0.6817, stage0_bag_acc: 23.8043, stage0_mean_ious: 0.3898, stage0_s: 0.0000, stage0_m: 0.0225, stage0_l: 0.1526, stage0_h: 0.4036, stage1_loss_instance_mil: 0.1532, stage1_bag_acc: 22.6092, stage1_neg_loss: 0.0791, stage1_mean_ious: 0.3589, stage1_s: 0.0000, stage1_m: 0.0162, stage1_l: 0.1470, stage1_h: 0.3712, loss: 0.9140, grad_norm: 2.4517
+2024-10-09 00:25:39,475 - mmdet - INFO - Epoch [1][350/360]	lr: 6.983e-02, eta: 1:02:11, time: 0.578, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6855, stage0_bag_acc: 21.8609, stage0_mean_ious: 0.3122, stage0_s: 0.0000, stage0_m: 0.0081, stage0_l: 0.1358, stage0_h: 0.3323, stage1_loss_instance_mil: 0.1352, stage1_bag_acc: 29.2235, stage1_neg_loss: 0.0105, stage1_mean_ious: 0.2901, stage1_s: 0.0000, stage1_m: 0.0080, stage1_l: 0.1394, stage1_h: 0.3016, loss: 0.8312, grad_norm: 0.6230
+2024-10-09 00:25:46,012 - mmdet - INFO - Saving checkpoint at 1 epochs
+2024-10-09 00:27:26,069 - mmdet - INFO - Evaluating bbox...
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0075
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.0485
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.60      | area=   all | maxDets=1000 ] = 0.0060
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.70      | area=   all | maxDets=1000 ] = 0.0004
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.0001
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.80      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.90      | area=   all | maxDets=1000 ] = 0.0000
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0208
+2024-10-09 00:27:26,889 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0177
+2024-10-09 00:27:26,890 - mmdet - INFO -  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0160
+2024-10-09 00:27:26,890 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.0226
+2024-10-09 00:27:26,890 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.0950
+2024-10-09 00:27:26,890 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.0226
+2024-10-09 00:27:26,890 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.0226
+2024-10-09 00:27:26,890 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.0419
+2024-10-09 00:27:26,890 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.0236
+2024-10-09 00:27:26,890 - mmdet - INFO -  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.0157
+2024-10-09 00:27:26,901 - mmdet - INFO - Exp name: P2BNet_r50_fpn_1x_coco_ms.py
+2024-10-09 00:27:26,902 - mmdet - INFO - Epoch(val) [1][360]	eval_iter_num: 720, bbox_mAP: 0.0070, bbox_mAP_50: 0.0480, bbox_mAP_75: 0.0060, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0000, bbox_mAP_copypaste: 0.007 0.048 0.006 0.000 0.000 0.000
+2024-10-09 00:27:58,958 - mmdet - INFO - Epoch [2][50/360]	lr: 8.182e-02, eta: 1:00:28, time: 0.641, data_time: 0.059, memory: 8677, stage0_loss_instance_mil: 0.6877, stage0_bag_acc: 20.4153, stage0_mean_ious: 0.3547, stage0_s: 0.0075, stage0_m: 0.0278, stage0_l: 0.1437, stage0_h: 0.3654, stage1_loss_instance_mil: 0.1209, stage1_bag_acc: 26.6314, stage1_neg_loss: 0.0121, stage1_mean_ious: 0.3374, stage1_s: 0.0063, stage1_m: 0.0293, stage1_l: 0.1494, stage1_h: 0.3441, loss: 0.8206, grad_norm: 0.4765
+2024-10-09 00:28:29,852 - mmdet - INFO - Epoch [2][100/360]	lr: 9.181e-02, eta: 1:00:12, time: 0.618, data_time: 0.015, memory: 8677, stage0_loss_instance_mil: 0.6893, stage0_bag_acc: 17.3969, stage0_mean_ious: 0.4103, stage0_s: 0.0000, stage0_m: 0.0229, stage0_l: 0.1457, stage0_h: 0.4189, stage1_loss_instance_mil: 0.1212, stage1_bag_acc: 18.0469, stage1_neg_loss: 0.0114, stage1_mean_ious: 0.3910, stage1_s: 0.0000, stage1_m: 0.0188, stage1_l: 0.1334, stage1_h: 0.4006, loss: 0.8220, grad_norm: 0.4491
+2024-10-09 00:28:58,513 - mmdet - INFO - Epoch [2][150/360]	lr: 1.000e-01, eta: 0:59:26, time: 0.573, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6893, stage0_bag_acc: 17.7730, stage0_mean_ious: 0.3253, stage0_s: 0.0000, stage0_m: 0.0300, stage0_l: 0.1480, stage0_h: 0.3372, stage1_loss_instance_mil: 0.1161, stage1_bag_acc: 18.6565, stage1_neg_loss: 0.0130, stage1_mean_ious: 0.3069, stage1_s: 0.0000, stage1_m: 0.0307, stage1_l: 0.1462, stage1_h: 0.3187, loss: 0.8184, grad_norm: 0.3655
+2024-10-09 00:29:28,470 - mmdet - INFO - Epoch [2][200/360]	lr: 1.000e-01, eta: 0:58:57, time: 0.599, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6816, stage0_bag_acc: 18.9734, stage0_mean_ious: 0.3617, stage0_s: 0.0000, stage0_m: 0.0074, stage0_l: 0.1756, stage0_h: 0.3729, stage1_loss_instance_mil: 0.1130, stage1_bag_acc: 25.7951, stage1_neg_loss: 0.0203, stage1_mean_ious: 0.3433, stage1_s: 0.0000, stage1_m: 0.0117, stage1_l: 0.1670, stage1_h: 0.3519, loss: 0.8150, grad_norm: 0.3926
+2024-10-09 00:29:58,761 - mmdet - INFO - Epoch [2][250/360]	lr: 1.000e-01, eta: 0:58:31, time: 0.606, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6853, stage0_bag_acc: 20.2644, stage0_mean_ious: 0.2691, stage0_s: 0.0000, stage0_m: 0.0436, stage0_l: 0.1499, stage0_h: 0.2656, stage1_loss_instance_mil: 0.1071, stage1_bag_acc: 21.3980, stage1_neg_loss: 0.0183, stage1_mean_ious: 0.2576, stage1_s: 0.0000, stage1_m: 0.0434, stage1_l: 0.1423, stage1_h: 0.2541, loss: 0.8107, grad_norm: 0.2982
+2024-10-09 00:30:28,962 - mmdet - INFO - Epoch [2][300/360]	lr: 1.000e-01, eta: 0:58:04, time: 0.604, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6790, stage0_bag_acc: 16.9068, stage0_mean_ious: 0.1948, stage0_s: 0.0000, stage0_m: 0.0190, stage0_l: 0.2601, stage0_h: 0.1670, stage1_loss_instance_mil: 0.1097, stage1_bag_acc: 24.6628, stage1_neg_loss: 0.0171, stage1_mean_ious: 0.1767, stage1_s: 0.0000, stage1_m: 0.0187, stage1_l: 0.2185, stage1_h: 0.1539, loss: 0.8058, grad_norm: 0.3294
+2024-10-09 00:30:59,661 - mmdet - INFO - Epoch [2][350/360]	lr: 1.000e-01, eta: 0:57:40, time: 0.614, data_time: 0.013, memory: 8677, stage0_loss_instance_mil: 0.6771, stage0_bag_acc: 24.7071, stage0_mean_ious: 0.3447, stage0_s: 0.0000, stage0_m: 0.0396, stage0_l: 0.1659, stage0_h: 0.3526, stage1_loss_instance_mil: 0.1118, stage1_bag_acc: 27.0666, stage1_neg_loss: 0.0219, stage1_mean_ious: 0.3250, stage1_s: 0.0000, stage1_m: 0.0401, stage1_l: 0.1512, stage1_h: 0.3335, loss: 0.8109, grad_norm: 0.3104
+2024-10-09 00:31:05,928 - mmdet - INFO - Saving checkpoint at 2 epochs

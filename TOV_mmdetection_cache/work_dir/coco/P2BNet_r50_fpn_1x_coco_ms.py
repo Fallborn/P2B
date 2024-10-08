@@ -28,7 +28,7 @@ model = dict(
         start_level=0,
         add_extra_convs='on_input',
         num_outs=4,
-        norm_cfg=dict(type='BN', requires_grad=True)),
+        norm_cfg=dict(type='GN', num_groups=32, requires_grad=True)),
     roi_head=dict(
         type='P2BHead',
         num_stages=2,
@@ -79,7 +79,7 @@ model = dict(
             shake_ratio=[0.1],
             base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
             iou_thr=0.3,
-            gen_num_neg=500),
+            gen_num_neg=5000),
         rcnn=None),
     test_cfg=dict(rpn=None, rcnn=None))
 dataset_type = 'CocoFmtDataset'
@@ -137,7 +137,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=8,
+    samples_per_gpu=4,
     workers_per_gpu=1,
     shuffle=None,
     train=dict(
@@ -169,11 +169,10 @@ data = dict(
                 ])
         ]),
     val=dict(
-        samples_per_gpu=16,
+        samples_per_gpu=2,
         type='CocoFmtDataset',
-        ann_file=
-        '/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
-        img_prefix='data/coco/images/train',
+        ann_file='data/coco/annotations_qc_pt/instances_train2017_coarse.json',
+        img_prefix='data/coco/images/train/',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True),
@@ -201,11 +200,9 @@ data = dict(
         ],
         test_mode=False),
     test=dict(
-        samples_per_gpu=16,
         type='CocoFmtDataset',
-        ann_file=
-        '/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
-        img_prefix='data/coco/images/train/',
+        ann_file='data/coco/annotations/instances_val2017.json',
+        img_prefix='data/coco/images/val/',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True),
@@ -230,10 +227,9 @@ data = dict(
                             'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes'
                         ])
                 ])
-        ],
-        test_mode=False))
+        ]))
 check = dict(stop_while_nan=False)
-optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.001)
+optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
