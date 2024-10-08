@@ -28,7 +28,7 @@ model = dict(
         start_level=0,
         add_extra_convs='on_input',
         num_outs=4,  # 5
-        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_cfg=norm_cfg
     ),
     roi_head=dict(
         type='P2BHead',
@@ -83,7 +83,7 @@ model = dict(
             base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
             # gen_num_per_box=10,
             iou_thr=0.3,
-            gen_num_neg=500,
+            gen_num_neg=5000,
         ),
         rcnn=None
     ),
@@ -130,7 +130,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=8,  # 2
+    samples_per_gpu=4,  # 2
     workers_per_gpu=1,  # didi-debug 2
     shuffle=False if debug else None,
     train=dict(
@@ -141,27 +141,25 @@ data = dict(
         pipeline=train_pipeline,
     ),
     val=dict(
-        samples_per_gpu=16,
+        samples_per_gpu=2,
         type=dataset_type,
-        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
-        img_prefix=data_root + 'images' + '/train',
+        ann_file=data_root + "annotations_qc_pt/instances_train2017_coarse.json",
+        img_prefix=data_root + 'images/'+ 'train/',  # 'train2017/',
         pipeline=test_pipeline,
         test_mode=False,  # modified
     ),
     test=dict(
-        samples_per_gpu=16,
         type=dataset_type,
-        ann_file='/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
-        img_prefix=data_root + 'images/' + 'train/',  # 'train2017/',
-        pipeline=test_pipeline,
-        test_mode=False,  # modified)
+        ann_file=data_root + 'annotations/instances_val2017.json',
+        img_prefix=data_root + 'images/' + 'val/',
+        pipeline=test_pipeline
     )
 )
 
 check = dict(stop_while_nan=False)  # add by hui
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.001)
+optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
