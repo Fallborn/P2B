@@ -79,7 +79,7 @@ model = dict(
             shake_ratio=[0.1],
             base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
             iou_thr=0.3,
-            gen_num_neg=5000),
+            gen_num_neg=500),
         rcnn=None),
     test_cfg=dict(rpn=None, rcnn=None))
 dataset_type = 'CocoFmtDataset'

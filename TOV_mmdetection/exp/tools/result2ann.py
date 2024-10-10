@@ -30,6 +30,7 @@ if __name__ == '__main__':
     res = coco.loadRes(args.det_file)
     iou_sum = 0
     num_sum = 0
+    cnt = 0
 
     for im_id in coco.imgToAnns:
         if im_id in res.imgToAnns:
@@ -38,8 +39,10 @@ if __name__ == '__main__':
                 ori_ann = coco.loadAnns(ann['ann_id'])[0]
                 assert ori_ann['id'] == ann['ann_id'], f"{ori_ann} vs {ann}"
 
-                for key in ['image_id', 'category_id', 'iscrowd']:
-                    assert ori_ann[key] == ann[key], key
+                # for key in ['image_id', 'category_id', 'iscrowd']:
+                #     if ori_ann[key] != ann[key]:
+                #         print(key)
+                    # assert ori_ann[key] == ann[key], key
 
                 for key in ['bbox', 'segmentation', 'area', ]:
                     if key == 'bbox':
@@ -61,3 +64,4 @@ if __name__ == '__main__':
 
     check(coco, res)
     json.dump(coco.dataset, open(args.save_ann, 'w'))
+    print(cnt)

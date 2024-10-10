@@ -3,7 +3,7 @@ log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
 custom_hooks = [dict(type='NumClassCheckHook')]
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = '../TOV_mmdetection_cache/work_dir/coco//epoch_11.pth'
+load_from = '../TOV_mmdetection_cache/work_dir/coco//epoch_5.pth'
 resume_from = None
 workflow = [('train', 1)]
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
@@ -243,7 +243,7 @@ evaluation = dict(
     interval=1,
     metric='bbox',
     save_result_file=
-    '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result_neu_det_origin.json',
+    '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result.json',
     do_first_eval=True,
     do_final_eval=True)
 gpu_ids = [3]

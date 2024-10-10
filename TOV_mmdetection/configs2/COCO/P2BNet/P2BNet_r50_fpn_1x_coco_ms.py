@@ -83,7 +83,7 @@ model = dict(
             base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
             # gen_num_per_box=10,
             iou_thr=0.3,
-            gen_num_neg=5000,
+            gen_num_neg=500,
         ),
         rcnn=None
     ),
