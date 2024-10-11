@@ -79,7 +79,7 @@ model = dict(
             shake_ratio=[0.1],
             base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
             iou_thr=0.3,
-            gen_num_neg=500),
+            gen_num_neg=3500),
         rcnn=None),
     test_cfg=dict(rpn=None, rcnn=None))
 dataset_type = 'CocoFmtDataset'
@@ -171,7 +171,7 @@ data = dict(
     val=dict(
         samples_per_gpu=2,
         type='CocoFmtDataset',
-        ann_file='data/coco/annotations_qc_pt/instances_train2017_coarse.json',
+        ann_file='data/coco/annotations/instances_train.json',
         img_prefix='data/coco/images/train/',
         pipeline=[
             dict(type='LoadImageFromFile'),
@@ -201,8 +201,8 @@ data = dict(
         test_mode=False),
     test=dict(
         type='CocoFmtDataset',
-        ann_file='data/coco/annotations/instances_val2017.json',
-        img_prefix='data/coco/images/val/',
+        ann_file='data/coco/annotations/instances_train.json',
+        img_prefix='data/coco/images/train/',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True),
@@ -229,7 +229,7 @@ data = dict(
                 ])
         ]))
 check = dict(stop_while_nan=False)
-optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.001)
+optimizer = dict(type='SGD', lr=0.015, momentum=0.9, weight_decay=0.001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
@@ -237,7 +237,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.001,
     step=[8, 11])
-runner = dict(type='EpochBasedRunner', max_epochs=18)
+runner = dict(type='EpochBasedRunner', max_epochs=20)
 work_dir = '../TOV_mmdetection_cache/work_dir/coco/'
 evaluation = dict(
     interval=1,
@@ -246,4 +246,4 @@ evaluation = dict(
     '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result.json',
     do_first_eval=False,
     do_final_eval=True)
-gpu_ids = [0]
+gpu_ids = [4]

@@ -83,7 +83,7 @@ model = dict(
             base_ratios=[1, 1.2, 1.3, 0.8, 0.7],
             # gen_num_per_box=10,
             iou_thr=0.3,
-            gen_num_neg=500,
+            gen_num_neg=3500,
         ),
         rcnn=None
     ),
@@ -143,15 +143,15 @@ data = dict(
     val=dict(
         samples_per_gpu=2,
         type=dataset_type,
-        ann_file=data_root + "annotations_qc_pt/instances_train2017_coarse.json",
-        img_prefix=data_root + 'images/'+ 'train/',  # 'train2017/',
+        ann_file=data_root + 'annotations/instances_train.json',
+        img_prefix=data_root + 'images/' + 'train/',
         pipeline=test_pipeline,
         test_mode=False,  # modified
     ),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        img_prefix=data_root + 'images/' + 'val/',
+        ann_file=data_root + 'annotations/instances_train.json',
+        img_prefix=data_root + 'images/' + 'train/',
         pipeline=test_pipeline
     )
 )
@@ -159,7 +159,7 @@ data = dict(
 check = dict(stop_while_nan=False)  # add by hui
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.001)
+optimizer = dict(type='SGD', lr=0.015, momentum=0.9, weight_decay=0.001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(

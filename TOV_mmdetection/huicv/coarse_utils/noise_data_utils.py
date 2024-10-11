@@ -84,11 +84,11 @@ def add_rand_points(jd, size_range=1.0, rand_type='uniform', **rand_kwargs):
     # Xc += x_off
     # Yc += y_off
 
-    noise_point = np.stack((Xc, Yc), axis=-1).tolist()
+    noise_point = np.stack((X1, Y1), axis=-1).tolist()
     for i, anno in enumerate(jd['annotations']):
         anno['point'] = noise_point[i]
-        anno['bbox'][0] = anno['point'][0]
-        anno['bbox'][1] = anno['point'][1]
+        anno['bbox'][0] = float(anno['point'][0])
+        anno['bbox'][1] = float(anno['point'][1])
 
 def replace_key_to_in_ann(jd, old_key, new_key):
     for ann in jd['annotations']:

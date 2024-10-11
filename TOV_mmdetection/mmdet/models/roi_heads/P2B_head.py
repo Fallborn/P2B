@@ -208,7 +208,7 @@ class P2BHead(StandardRoIHead):
         # TODO: a more flexible way to decide which feature maps to use
 
         bbox_feats = self.bbox_roi_extractor(
-            [i + 1e-6 for i in x[:self.bbox_roi_extractor.num_inputs]],
+            [i + 1e-5 for i in x[:self.bbox_roi_extractor.num_inputs]],
             rois)
 
         if self.with_shared_head:
