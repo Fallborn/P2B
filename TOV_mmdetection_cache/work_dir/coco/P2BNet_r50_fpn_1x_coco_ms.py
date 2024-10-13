@@ -229,7 +229,7 @@ data = dict(
                 ])
         ]))
 check = dict(stop_while_nan=False)
-optimizer = dict(type='SGD', lr=0.015, momentum=0.9, weight_decay=0.001)
+optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
@@ -237,7 +237,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.001,
     step=[8, 11])
-runner = dict(type='EpochBasedRunner', max_epochs=20)
+runner = dict(type='EpochBasedRunner', max_epochs=12)
 work_dir = '../TOV_mmdetection_cache/work_dir/coco/'
 evaluation = dict(
     interval=1,
@@ -246,4 +246,4 @@ evaluation = dict(
     '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result.json',
     do_first_eval=False,
     do_final_eval=True)
-gpu_ids = [4]
+gpu_ids = [1]

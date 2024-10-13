@@ -159,7 +159,9 @@ data = dict(
 check = dict(stop_while_nan=False)  # add by hui
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.015, momentum=0.9, weight_decay=0.001)
+# optimizer = dict(type='SGD', lr=0.015, momentum=0.9, weight_decay=0.001)
+optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
+
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
