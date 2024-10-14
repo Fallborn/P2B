@@ -80,25 +80,19 @@ def add_rand_points(jd, size_range=1.0, rand_type='uniform', **rand_kwargs):
     X1, Y1, W, H = bboxes.T
     Xc, Yc = X1 + W / 2, Y1 + H / 2
     x_off, y_off = rand_offset[:, 0] * size_range * W, rand_offset[:, 1] * size_range * H
-    # rand偏移量
-    # Xc += x_off
-    # Yc += y_off
-
-    noise_point = np.stack((X1, Y1), axis=-1).tolist()
+    Xc += x_off
+    Yc += y_off
+    noise_point = np.stack((Xc, Yc), axis=-1).tolist()
     for i, anno in enumerate(jd['annotations']):
         anno['point'] = noise_point[i]
-        anno['bbox'][0] = float(anno['point'][0])
-        anno['bbox'][1] = float(anno['point'][1])
+
 
 def replace_key_to_in_ann(jd, old_key, new_key):
     for ann in jd['annotations']:
         ann[new_key] = ann[old_key]
         del ann[old_key]
 
-#发现生成的category id比train要少1
-def reduce_category_id(jd):
-    for ann in jd['annotations']:
-        ann['category_id'] -= 1
+
 def xcycwh2x1y1x2y2(xc, yc, w, h):
     x1, x2 = xc - w / 2, xc + w / 2
     y1, y2 = yc - h / 2, yc + h / 2
@@ -156,7 +150,6 @@ def generate_noisept_dataset(ann_file, save_ann=None, *args, **kwargs):
     jd = json.load(open(ann_file))
     add_rand_points(jd, *args, **kwargs)
     replace_key_to_in_ann(jd, 'bbox', 'true_bbox')
-    reduce_category_id(jd)
 
     if save_ann is None:
         if not osp.isabs(ann_file):

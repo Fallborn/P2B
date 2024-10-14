@@ -137,7 +137,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=8,
     workers_per_gpu=1,
     shuffle=None,
     train=dict(
@@ -169,10 +169,11 @@ data = dict(
                 ])
         ]),
     val=dict(
-        samples_per_gpu=2,
+        samples_per_gpu=16,
         type='CocoFmtDataset',
-        ann_file='data/coco/annotations/instances_train.json',
-        img_prefix='data/coco/images/train/',
+        ann_file=
+        '/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
+        img_prefix='data/coco/images/train',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True),
@@ -200,8 +201,10 @@ data = dict(
         ],
         test_mode=False),
     test=dict(
+        samples_per_gpu=16,
         type='CocoFmtDataset',
-        ann_file='data/coco/annotations/instances_train.json',
+        ann_file=
+        '/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
         img_prefix='data/coco/images/train/',
         pipeline=[
             dict(type='LoadImageFromFile'),
@@ -227,9 +230,19 @@ data = dict(
                             'gt_bboxes_ignore', 'gt_anns_id', 'gt_true_bboxes'
                         ])
                 ])
-        ]))
+        ],
+        test_mode=False))
 check = dict(stop_while_nan=False)
-optimizer = dict(type='Adam', lr=0.0003, weight_decay=0.0001)
+optimizer = dict(
+    type='AdamW',
+    lr=5e-05,
+    betas=(0.9, 0.999),
+    weight_decay=0.05,
+    paramwise_cfg=dict(
+        custom_keys=dict(
+            absolute_pos_embed=dict(decay_mult=0.0),
+            relative_position_bias_table=dict(decay_mult=0.0),
+            norm=dict(decay_mult=0.0))))
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
@@ -240,10 +253,10 @@ lr_config = dict(
 runner = dict(type='EpochBasedRunner', max_epochs=12)
 work_dir = '../TOV_mmdetection_cache/work_dir/coco/'
 evaluation = dict(
-    interval=1,
+    interval=3,
     metric='bbox',
     save_result_file=
     '../TOV_mmdetection_cache/work_dir/coco/_1200_latest_result.json',
     do_first_eval=False,
     do_final_eval=True)
-gpu_ids = [1]
+gpu_ids = [0]

@@ -229,7 +229,16 @@ data = dict(
                 ])
         ]))
 check = dict(stop_while_nan=False)
-optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.001)
+optimizer = dict(
+    type='AdamW',
+    lr=1e-05,
+    betas=(0.9, 0.999),
+    weight_decay=0.005,
+    paramwise_cfg=dict(
+        custom_keys=dict(
+            absolute_pos_embed=dict(decay_mult=0.0),
+            relative_position_bias_table=dict(decay_mult=0.0),
+            norm=dict(decay_mult=0.0))))
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
