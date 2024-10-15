@@ -137,7 +137,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=8,
+    samples_per_gpu=2,
     workers_per_gpu=1,
     shuffle=None,
     train=dict(
@@ -169,7 +169,7 @@ data = dict(
                 ])
         ]),
     val=dict(
-        samples_per_gpu=16,
+        samples_per_gpu=4,
         type='CocoFmtDataset',
         ann_file=
         '/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
@@ -201,7 +201,7 @@ data = dict(
         ],
         test_mode=False),
     test=dict(
-        samples_per_gpu=16,
+        samples_per_gpu=4,
         type='CocoFmtDataset',
         ann_file=
         '/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',

@@ -6,7 +6,7 @@ _base_ = [
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.001)
 dataset_type = 'CocoFmtDataset'
-data_root = 'data/coco/'
+data_root = 'data_neu_det/coco/'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
