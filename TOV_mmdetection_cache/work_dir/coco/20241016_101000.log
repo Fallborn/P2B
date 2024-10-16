@@ -1,3 +1,37 @@
+2024-10-16 10:10:00,330 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.7.16 (default, Jan 17 2023, 22:20:44) [GCC 11.2.0]
+CUDA available: True
+GPU 0,1,2,3,4,5,6,7: NVIDIA GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda-12.0
+NVCC: Build cuda_12.0.r12.0/compiler.31968024_0
+GCC: gcc (Ubuntu 11.4.0-2ubuntu1~18.04) 11.4.0
+PyTorch: 1.7.0
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.4-Product Build 20210904 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.6.0 (Git Hash 5ef631a030a6f73131c77892041042805a06064f)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.0
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.0.3
+  - Magma 2.5.2
+  - Build settings: BLAS=MKL, BUILD_TYPE=Release, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DUSE_VULKAN_WRAPPER -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, USE_CUDA=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.8.0
+OpenCV: 4.8.1
+MMCV: 1.3.3
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.0
+MMDetection: 2.13.0+e282583
+------------------------------------------------------------
+
+2024-10-16 10:10:01,185 - mmdet - INFO - Distributed training: False
+2024-10-16 10:10:02,007 - mmdet - INFO - Config:
 checkpoint_config = dict(interval=1)
 log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
 custom_hooks = [dict(type='NumClassCheckHook')]
@@ -137,7 +171,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=8,
+    samples_per_gpu=2,
     workers_per_gpu=1,
     shuffle=None,
     train=dict(
@@ -169,7 +203,7 @@ data = dict(
                 ])
         ]),
     val=dict(
-        samples_per_gpu=8,
+        samples_per_gpu=4,
         type='CocoFmtDataset',
         ann_file=
         '/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
@@ -201,7 +235,7 @@ data = dict(
         ],
         test_mode=False),
     test=dict(
-        samples_per_gpu=8,
+        samples_per_gpu=4,
         type='CocoFmtDataset',
         ann_file=
         '/home/lxz/P2BNet/TOV_mmdetection/data/coco/annotations/instances_train.json',
@@ -260,3 +294,22 @@ evaluation = dict(
     do_first_eval=False,
     do_final_eval=True)
 gpu_ids = [2]
+
+2024-10-16 10:10:05,171 - mmdet - INFO - load checkpoint from ../TOV_mmdetection_cache/work_dir/coco/pre_trained/P2B.pth
+2024-10-16 10:10:05,172 - mmdet - INFO - Use load_from_local loader
+2024-10-16 10:10:05,434 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for roi_head.bbox_head.fc_cls.0.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([7, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.0.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([7]).
+size mismatch for roi_head.bbox_head.fc_cls.1.weight: copying a param with shape torch.Size([80, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.1.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([6]).
+size mismatch for roi_head.bbox_head.fc_ins.0.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([7, 1024]).
+size mismatch for roi_head.bbox_head.fc_ins.0.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([7]).
+size mismatch for roi_head.bbox_head.fc_ins.1.weight: copying a param with shape torch.Size([80, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_ins.1.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([6]).
+2024-10-16 10:10:05,440 - mmdet - INFO - Start running, host: lxz@user-SYS-4029GP-TRT2, work_dir: /home/lxz/P2BNet/TOV_mmdetection_cache/work_dir/coco
+2024-10-16 10:10:05,441 - mmdet - INFO - workflow: [('train', 1)], max: 12 epochs
+2024-10-16 10:10:30,685 - mmdet - INFO - Epoch [1][50/720]	lr: 4.945e-06, eta: 1:12:16, time: 0.505, data_time: 0.051, memory: 5217, stage0_loss_instance_mil: 0.7261, stage0_bag_acc: 20.3286, stage0_mean_ious: 0.1841, stage0_s: 0.0000, stage0_m: 0.0207, stage0_l: 0.0847, stage0_h: 0.1713, stage1_loss_instance_mil: 0.1520, stage1_bag_acc: 23.1984, stage1_neg_loss: 0.0019, stage1_mean_ious: 0.1753, stage1_s: 0.0000, stage1_m: 0.0219, stage1_l: 0.0767, stage1_h: 0.1642, loss: 0.8800, grad_norm: 6.3012
+2024-10-16 10:10:52,967 - mmdet - INFO - Epoch [1][100/720]	lr: 9.940e-06, eta: 1:07:38, time: 0.446, data_time: 0.007, memory: 5217, stage0_loss_instance_mil: 0.6822, stage0_bag_acc: 27.0524, stage0_mean_ious: 0.2447, stage0_s: 0.0000, stage0_m: 0.0238, stage0_l: 0.0801, stage0_h: 0.2532, stage1_loss_instance_mil: 0.1754, stage1_bag_acc: 16.6444, stage1_neg_loss: 0.0026, stage1_mean_ious: 0.2361, stage1_s: 0.0000, stage1_m: 0.0205, stage1_l: 0.0728, stage1_h: 0.2478, loss: 0.8602, grad_norm: 6.2222
+2024-10-16 10:11:14,285 - mmdet - INFO - Epoch [1][150/720]	lr: 1.494e-05, eta: 1:04:56, time: 0.426, data_time: 0.007, memory: 5238, stage0_loss_instance_mil: 0.5039, stage0_bag_acc: 68.4317, stage0_mean_ious: 0.2381, stage0_s: 0.0000, stage0_m: 0.0162, stage0_l: 0.1053, stage0_h: 0.2351, stage1_loss_instance_mil: 0.2405, stage1_bag_acc: 40.9136, stage1_neg_loss: 0.0337, stage1_mean_ious: 0.2335, stage1_s: 0.0000, stage1_m: 0.0163, stage1_l: 0.1009, stage1_h: 0.2293, loss: 0.7781, grad_norm: 12.9923
+2024-10-16 10:11:35,530 - mmdet - INFO - Epoch [1][200/720]	lr: 1.993e-05, eta: 1:03:21, time: 0.425, data_time: 0.006, memory: 5238, stage0_loss_instance_mil: 0.2528, stage0_bag_acc: 89.0508, stage0_mean_ious: 0.2523, stage0_s: 0.0000, stage0_m: 0.0376, stage0_l: 0.0768, stage0_h: 0.2495, stage1_loss_instance_mil: 0.2889, stage1_bag_acc: 81.1095, stage1_neg_loss: 0.2700, stage1_mean_ious: 0.2402, stage1_s: 0.0000, stage1_m: 0.0258, stage1_l: 0.0766, stage1_h: 0.2368, loss: 0.8117, grad_norm: 49.1355
